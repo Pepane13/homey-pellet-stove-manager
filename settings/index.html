@@ -15,7 +15,9 @@
     .row { display: flex; gap: 8px; align-items: center; margin-top: 6px; font-size: 13px; }
     .row input[type=number] { width: 90px; }
     button { width: 100%; padding: 11px; border: 0; border-radius: 8px; background: #e8681a; color: #fff; font-size: 15px; font-weight: 600; margin-top: 16px; }
-    #msg { margin-top: 8px; font-size: 13px; min-height: 18px; }
+    #msg, #msg2 { margin-top: 8px; font-size: 13px; min-height: 18px; }
+    button.secondary { background: #fff; color: #e8681a; border: 1px solid #e8681a; padding: 9px; font-size: 14px; margin-top: 12px; }
+    td.sm { font-size: 12px; color: #555; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     td { padding: 5px 4px; border-bottom: 1px solid #eee; vertical-align: top; }
     td.v { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -37,6 +39,19 @@
     </select>
   </div>
 
+  <h2 data-i18n="settings.antic_title"></h2>
+  <div class="role">
+    <div class="desc" data-i18n="settings.antic_desc"></div>
+    <div class="row"><label for="anticTarget" style="flex:1" data-i18n="settings.antic_target"></label><input type="number" id="anticTarget" min="10" max="28" step="0.5"></div>
+    <div class="row"><label for="anticTime" style="flex:1" data-i18n="settings.antic_time"></label><input type="time" id="anticTime" style="width:110px;padding:6px;border:1px solid #ccd;border-radius:6px"></div>
+    <div class="row"><label for="anticSensor" style="flex:1" data-i18n="settings.antic_sensor"></label>
+      <select id="anticSensor" style="width:180px">
+        <option value="comfort" data-i18n="settings.antic_comfort"></option>
+        <option value="regulation" data-i18n="settings.antic_regulation"></option>
+      </select></div>
+    <button id="saveAntic" class="secondary" data-i18n="settings.antic_save"></button>
+  </div>
+
   <h2 data-i18n="settings.advanced"></h2>
   <div class="role">
     <label class="title" for="stale" data-i18n="settings.stale"></label>
@@ -49,6 +64,14 @@
 
   <h2 data-i18n="settings.status"></h2>
   <table id="status"><tr><td data-i18n="settings.loading"></td></tr></table>
+
+  <h2 data-i18n="settings.learn_title"></h2>
+  <p class="hint" data-i18n="settings.learn_desc"></p>
+  <table id="learning"></table>
+  <h2 style="font-size:14px" data-i18n="settings.learn_events"></h2>
+  <table id="events"></table>
+  <button id="resetLearning" class="secondary" data-i18n="settings.learn_reset"></button>
+  <div id="msg2"></div>
 
 <script type="text/javascript">
   var ROLES = [
@@ -63,7 +86,17 @@
   function onHomeyReady(Homey) {
     var sources = [];
     var config = {};
-    var t = function (k) { return Homey.__(k); };
+    var t = function (k, tokens) {
+      var s = Homey.__(k) || k;
+      Object.keys(tokens || {}).forEach(function (n) { s = s.split('{{' + n + '}}').join(tokens[n]); });
+      return s;
+    };
+    var hm = function (ms, tz) {
+      try { return new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit', timeZone: tz }); } catch (e) { return new Date(ms).toLocaleTimeString().slice(0, 5); }
+    };
+    var dhm = function (ms, tz) {
+      try { return new Date(ms).toLocaleString('fr-FR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', timeZone: tz }); } catch (e) { return new Date(ms).toLocaleString(); }
+    };
     var el = function (id) { return document.getElementById(id); };
 
     function esc(s) {
@@ -134,6 +167,36 @@
       return out;
     }
 
+    function planText(s) {
+      var p = s.plan;
+      if (!p) return t('settings.plan_none');
+      var tok = { time: hm(p.at, s.timeZone), start: p.startAt ? hm(p.startAt, s.timeZone) : '', minutes: p.minutes, expected: p.expected, target: p.target };
+      if (!p.needed) return t('settings.plan_not_needed', tok);
+      return t(p.reachable ? 'settings.plan_start' : 'settings.plan_unreachable', tok);
+    }
+
+    function showLearning(s) {
+      var th = s.thermal;
+      if (!th) return;
+      var cell = function (v) { return v.value + ' <span class="sm">(' + v.samples + ')</span>'; };
+      var html = '<tr><td></td><td class="v sm">' + esc(t('settings.antic_comfort')) + '</td><td class="v sm">' + esc(t('settings.antic_regulation')) + '</td></tr>';
+      ['k', 'gain', 'lag'].forEach(function (p) {
+        html += '<tr><td>' + esc(t('settings.learn_' + p)) + '</td><td class="v">' + cell(th.params.comfort[p]) + '</td><td class="v">' + cell(th.params.regulation[p]) + '</td></tr>';
+      });
+      html += '<tr><td>' + esc(t('settings.learn_phase')) + '</td><td class="v" colspan="2">' + esc(t('settings.phase_' + (th.phase || 'unknown'))) + '</td></tr>';
+      el('learning').innerHTML = html;
+
+      if (!th.history.length) { el('events').innerHTML = '<tr><td class="sm">' + esc(t('settings.learn_none')) + '</td></tr>'; return; }
+      el('events').innerHTML = th.history.map(function (e) {
+        var what = t('settings.ev_' + e.type) + ' · ' + t('settings.antic_' + e.sensor) + '<br><span class="sm">' + esc(dhm(e.at, s.timeZone)) + ' · ' +
+          esc(e.from) + ' → ' + esc(e.to) + ' °C' + (e.outdoor != null ? ', ext. ' + esc(e.outdoor) + ' °C' : '') + '</span>';
+        var val = e.accepted
+          ? (e.type === 'cooling' ? esc(e.value) : esc(e.value) + ' °C/h · ' + esc(e.lag) + ' min')
+          : t('settings.ev_rejected') + '<br><span class="sm">' + esc(t('settings.reason_' + e.reason)) + '</span>';
+        return '<tr><td>' + what + '</td><td class="v ' + (e.accepted ? 'ok' : 'ko') + '">' + val + '</td></tr>';
+      }).join('');
+    }
+
     function showStatus() {
       Homey.api('GET', '/status', null, function (err, s) {
         if (err || !s) { el('status').innerHTML = '<tr><td>' + esc(err ? err.message || err : t('settings.no_status')) + '</td></tr>'; return; }
@@ -148,7 +211,7 @@
         html += row(t('settings.st_outdoor'), deg(s.outdoor) + (s.outdoorSource ? ' · ' + t('settings.src_' + s.outdoorSource) + (s.outdoorCorrected ? ' ' + t('settings.corrected') : '') : ''), s.outdoor != null);
         if (s.outdoorOffset) html += row(t('settings.st_offset'), (s.outdoorOffset.value > 0 ? '+' : '') + s.outdoorOffset.value + ' °C (' + s.outdoorOffset.samples + ')');
         html += row(t('settings.st_forecast_src'), s.forecastSource
-          ? t('settings.src_' + s.forecastSource) + (s.forecastName ? ' – ' + s.forecastName : '') + (s.forecastFallback ? ' (' + t('settings.st_fallback') + ')' : '')
+          ? t('settings.src_' + s.forecastSource) + (s.forecastSource === 'device' && s.forecastName ? ' – ' + s.forecastName : '') + (s.forecastFallback ? ' (' + t('settings.st_fallback') + ')' : '')
           : (s.forecastError || '—'), s.forecastSource != null && !s.forecastFallback);
         html += row(t('settings.st_forecast_now'), deg(s.forecastNow));
         html += row(t('settings.st_forecast'), deg(s.forecastMin6h));
@@ -162,7 +225,9 @@
           if (r.reason === 'not_configured') return;
           html += row(t('settings.role_' + role) + ' – ' + (r.name || ''), r.ok ? deg(r.value) : t('settings.reason_' + r.reason), r.ok);
         });
+        html += row(t('settings.st_plan'), planText(s), s.plan ? s.plan.reachable : undefined);
         el('status').innerHTML = html;
+        showLearning(s);
       });
     }
 
@@ -173,6 +238,35 @@
         el('msg').textContent = err ? (err.message || String(err)) : t('settings.saved');
         if (!err) setTimeout(showStatus, 1500);
       });
+    });
+
+    el('saveAntic').addEventListener('click', function () {
+      var a = {
+        target: Math.min(28, Math.max(10, Number(el('anticTarget').value) || 21)),
+        time: el('anticTime').value || '06:20',
+        sensor: el('anticSensor').value
+      };
+      Homey.set('anticipation', a, function (err) {
+        el('msg').textContent = err ? (err.message || String(err)) : t('settings.saved');
+        if (!err) setTimeout(showStatus, 1500);
+      });
+    });
+
+    el('resetLearning').addEventListener('click', function () {
+      Homey.confirm(t('settings.learn_reset') + ' ?', 'warning', function (e, ok) {
+        if (!ok) return;
+        Homey.api('POST', '/learning/reset', null, function (err) {
+          el('msg2').textContent = err ? (err.message || String(err)) : t('settings.learn_reset_confirm');
+          if (!err) showStatus();
+        });
+      });
+    });
+
+    Homey.get('anticipation', function (err, a) {
+      a = a || {};
+      el('anticTarget').value = a.target != null ? a.target : 21;
+      el('anticTime').value = a.time || '06:20';
+      el('anticSensor').value = a.sensor === 'regulation' ? 'regulation' : 'comfort';
     });
 
     Homey.get('sensors', function (err, value) {

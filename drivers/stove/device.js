@@ -14,6 +14,8 @@ const LATER_CAPABILITIES = [
   'measure_temperature.outdoor',
   'measure_temperature.forecast_min',
   'stove_outdoor_source',
+  'stove_heatup_minutes',
+  'stove_start_time',
 ];
 
 class StoveDevice extends Homey.Device {
@@ -38,6 +40,8 @@ class StoveDevice extends Homey.Device {
     sensors.on('sensor_unavailable', this._onSensorDown);
     sensors.on('sensor_restored', this._onSensorUp);
     if (sensors.state) this._onSensors(sensors.state);
+    this._onPlan = (plan) => this._applyPlan(plan).catch(this.error);
+    this.homey.app.on('plan', this._onPlan);
 
     this._connect();
     this._schedule(2000);
@@ -67,6 +71,7 @@ class StoveDevice extends Homey.Device {
     try {
       const state = await this.client.snapshot();
       await this._apply(state);
+      this.homey.app.setStoveStatus(state.status.status);
       if (this.failures >= UNAVAILABLE_AFTER) this.log('Connection restored');
       this.failures = 0;
       if (!this.getAvailable()) await this.setAvailable();
@@ -74,6 +79,7 @@ class StoveDevice extends Homey.Device {
       this.failures += 1;
       this.log(`Snapshot failed (${this.failures}): ${err.message}`);
       if (this.failures === UNAVAILABLE_AFTER) {
+        this.homey.app.setStoveStatus(null);
         await this.setUnavailable(this.homey.__('device.unreachable')).catch(this.error);
         await this.homey.flow.getDeviceTriggerCard('stove_connection_lost').trigger(this).catch(this.error);
       }
@@ -128,6 +134,27 @@ class StoveDevice extends Homey.Device {
     }
   }
 
+  async _applyPlan(plan) {
+    if (!plan) {
+      await this._set('stove_heatup_minutes', null, true);
+      await this._set('stove_start_time', '—');
+      return;
+    }
+    await this._set('stove_heatup_minutes', plan.needed ? plan.minutes : 0);
+    let text;
+    if (!plan.needed) {
+      text = this.homey.__('plan.not_needed', { target: plan.target });
+    } else {
+      const time = new Date(plan.startAt).toLocaleTimeString('fr-FR', {
+        hour: '2-digit', minute: '2-digit', timeZone: this.homey.clock.getTimezone(),
+      });
+      text = this.homey.__(plan.reachable ? 'plan.start_at' : 'plan.unreachable', {
+        time, target: plan.target, expected: plan.expected,
+      });
+    }
+    await this._set('stove_start_time', text);
+  }
+
   _sensorTrigger(card, e) {
     const tokens = {
       role: this.homey.__(`sensor_role.${e.role}`),
@@ -175,6 +202,7 @@ class StoveDevice extends Homey.Device {
       sensors.off('sensor_unavailable', this._onSensorDown);
       sensors.off('sensor_restored', this._onSensorUp);
     }
+    if (this._onPlan) this.homey.app.off('plan', this._onPlan);
     this.homey.clearTimeout(this.pollTimer);
     if (this.connection) this.connection.close();
   }

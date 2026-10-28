@@ -7,4 +7,7 @@ module.exports = {
   async getStatus({ homey }) {
     return homey.app.getSensorStatus();
   },
+  async resetLearning({ homey }) {
+    return homey.app.resetLearning();
+  },
 };

@@ -39,13 +39,30 @@ sent once an hour (`homey:manager:geolocation` permission). If Open-Meteo is unr
 forecast is kept for 6 hours, then the weather device is used. The mean error and bias of each
 forecast against the outdoor reference sensor are measured hourly and shown in the settings.
 
+## Learning and anticipation (0.3)
+
+Per indoor sensor (comfort and thermostat), the app learns three parameters of a simple model
+(`dT/dt = G − k·(T − Tout)` while heating, `−k·(T − Tout)` when off):
+
+- **losses `k`**, measured on quiet nights with the stove off (21:00–08:00, one hour after it stopped,
+  at least 3 hours, indoor/outdoor difference of 5 K or more);
+- **heating gain `G`** and **ignition lag**, measured on each heat-up (heat-ups started between
+  10:00 and 16:00 are ignored because of the sun);
+- sudden drops (window open), implausible values and outliers are rejected.
+
+Starting values come from the analysis of the consumption history; each one counts as three
+observations, then the estimate follows a moving average over about twenty. From these parameters,
+the current temperature and the outdoor forecast (Météo-France curve corrected by its measured bias,
+or the trend towards the 6-hour minimum), the app computes continuously the latest start time that
+reaches a target temperature at a target time. The target is set in the settings for now; it will
+come from Flow cards in 0.4. Nothing is controlled yet.
+
 ## Roadmap
 
 1. Write commands (power 1–5, shutdown, alarm reset) after validation on hardware.
 2. Pellet consumption model, refill advice, monthly bag forecast, cost tracking.
 3. Cleaning and professional maintenance tracking (12 months or 1,200 h, whichever comes first).
-4. Learning (heat losses, heating rate per power level), anticipation, thermostat control,
-   direct regulation mode with fallback.
+4. Thermostat control from Flow targets, heating rate per power level, direct regulation mode with fallback.
 5. Dashboard widget.
 
 ## Protocol

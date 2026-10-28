@@ -20,7 +20,9 @@
     "stove_comfort_gap",
     "measure_temperature.outdoor",
     "measure_temperature.forecast_min",
-    "stove_outdoor_source"
+    "stove_outdoor_source",
+    "stove_heatup_minutes",
+    "stove_start_time"
   ],
   "capabilitiesOptions": {
     "measure_temperature.flue_gas": {

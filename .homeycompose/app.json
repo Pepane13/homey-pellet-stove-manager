@@ -1,6 +1,6 @@
 {
   "id": "com.pepane13.pelletstove",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -58,6 +58,10 @@
     "getStatus": {
       "method": "GET",
       "path": "/status"
+    },
+    "resetLearning": {
+      "method": "POST",
+      "path": "/learning/reset"
     }
   }
 }
