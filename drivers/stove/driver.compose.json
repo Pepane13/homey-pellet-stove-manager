@@ -14,7 +14,13 @@
     "stove_auger_speed",
     "stove_exhaust_speed",
     "stove_hours_total",
-    "stove_hours_service"
+    "stove_hours_service",
+    "measure_temperature.comfort",
+    "measure_temperature.regulation",
+    "stove_comfort_gap",
+    "measure_temperature.outdoor",
+    "measure_temperature.forecast_min",
+    "stove_outdoor_source"
   ],
   "capabilitiesOptions": {
     "measure_temperature.flue_gas": {
@@ -33,6 +39,30 @@
       "title": {
         "en": "Stove alarm",
         "fr": "Alarme du poêle"
+      }
+    },
+    "measure_temperature.comfort": {
+      "title": {
+        "en": "Comfort temperature",
+        "fr": "Température de confort"
+      }
+    },
+    "measure_temperature.regulation": {
+      "title": {
+        "en": "Thermostat temperature",
+        "fr": "Température du thermostat"
+      }
+    },
+    "measure_temperature.outdoor": {
+      "title": {
+        "en": "Outdoor temperature",
+        "fr": "Température extérieure"
+      }
+    },
+    "measure_temperature.forecast_min": {
+      "title": {
+        "en": "Forecast minimum (6 h)",
+        "fr": "Minimum prévu (6 h)"
       }
     }
   },

@@ -6,6 +6,16 @@ const { DuepiClient } = require('../../lib/duepi/client');
 
 const UNAVAILABLE_AFTER = 3; // consecutive failed snapshots
 
+// Capabilities added after the first release: added to existing devices on start-up.
+const LATER_CAPABILITIES = [
+  'measure_temperature.comfort',
+  'measure_temperature.regulation',
+  'stove_comfort_gap',
+  'measure_temperature.outdoor',
+  'measure_temperature.forecast_min',
+  'stove_outdoor_source',
+];
+
 class StoveDevice extends Homey.Device {
 
   async onInit() {
@@ -14,6 +24,20 @@ class StoveDevice extends Homey.Device {
     this.lastErrorCode = null;
     this.pollTimer = null;
     this.stopped = false;
+
+    for (const cap of LATER_CAPABILITIES) {
+      if (!this.hasCapability(cap)) await this.addCapability(cap).catch(this.error);
+    }
+
+    // Temperatures come from the app-wide sensor hub (sensors chosen in the app settings)
+    const { sensors } = this.homey.app;
+    this._onSensors = (state) => this._applySensors(state).catch(this.error);
+    this._onSensorDown = (e) => this._sensorTrigger('sensor_unavailable', e);
+    this._onSensorUp = (e) => this._sensorTrigger('sensor_restored', e);
+    sensors.on('update', this._onSensors);
+    sensors.on('sensor_unavailable', this._onSensorDown);
+    sensors.on('sensor_restored', this._onSensorUp);
+    if (sensors.state) this._onSensors(sensors.state);
 
     this._connect();
     this._schedule(2000);
@@ -91,8 +115,34 @@ class StoveDevice extends Homey.Device {
     this.lastStatus = status;
   }
 
-  async _set(capability, value) {
-    if (value === undefined || value === null || Number.isNaN(value)) return;
+  async _applySensors(s) {
+    // null clears a value whose sensor is unavailable, instead of showing a stale reading
+    await this._set('measure_temperature.comfort', s.comfort, true);
+    await this._set('measure_temperature.regulation', s.regulation, true);
+    await this._set('stove_comfort_gap', s.gap, true);
+    await this._set('measure_temperature.outdoor', s.outdoor, true);
+    await this._set('measure_temperature.forecast_min', s.forecastMin6h, true);
+    if (s.outdoorSource) {
+      const key = s.outdoorSource === 'backup' && s.outdoorCorrected ? 'backup_corrected' : s.outdoorSource;
+      await this._set('stove_outdoor_source', `${this.homey.__(`outdoor_source.${key}`)} – ${s.outdoorSensor || ''}`);
+    }
+  }
+
+  _sensorTrigger(card, e) {
+    const tokens = {
+      role: this.homey.__(`sensor_role.${e.role}`),
+      sensor: e.sensor || '',
+    };
+    if (card === 'sensor_unavailable') {
+      tokens.reason = this.homey.__(`sensor_reason.${e.reason}`);
+      tokens.replacement = e.replacement || '—';
+    }
+    this.homey.flow.getDeviceTriggerCard(card).trigger(this, tokens).catch(this.error);
+  }
+
+  async _set(capability, value, allowNull = false) {
+    if (value === undefined || Number.isNaN(value)) return;
+    if (value === null && !allowNull) return;
     if (!this.hasCapability(capability)) return;
     if (this.getCapabilityValue(capability) === value) return;
     await this.setCapabilityValue(capability, value).catch(this.error);
@@ -119,6 +169,12 @@ class StoveDevice extends Homey.Device {
 
   _stop() {
     this.stopped = true;
+    const { sensors } = this.homey.app;
+    if (sensors && this._onSensors) {
+      sensors.off('update', this._onSensors);
+      sensors.off('sensor_unavailable', this._onSensorDown);
+      sensors.off('sensor_restored', this._onSensorUp);
+    }
     this.homey.clearTimeout(this.pollTimer);
     if (this.connection) this.connection.close();
   }

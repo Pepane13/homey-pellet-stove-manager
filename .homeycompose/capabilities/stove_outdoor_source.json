@@ -1,0 +1,12 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Outdoor sensor used",
+    "fr": "Sonde extérieure utilisée"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/thermo.svg",
+  "insights": false
+}

@@ -1,23 +1,41 @@
 {
   "id": "com.pepane13.pelletstove",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "compatibility": ">=12.0.0",
   "sdk": 3,
-  "platforms": ["local"],
+  "platforms": [
+    "local"
+  ],
   "name": {
     "en": "Pellet Stove Manager",
     "fr": "Gestion Poêle à Granulés"
   },
   "description": {
-    "en": "Monitor and manage your Duepi EVO pellet stove: status, alarms, burn hours and maintenance.",
-    "fr": "Surveillez et gérez votre poêle à granulés Duepi EVO : état, alarmes, heures de combustion et entretien."
+    "en": "Monitor and manage your Duepi EVO pellet stove: status, alarms, burn hours, maintenance and room temperatures.",
+    "fr": "Surveillez et gérez votre poêle à granulés Duepi EVO : état, alarmes, heures de combustion, entretien et températures de la maison."
   },
-  "category": ["climate"],
+  "category": [
+    "climate"
+  ],
   "tags": {
-    "en": ["pellet stove", "Duepi", "myDPRemote", "Interstoves", "heating"],
-    "fr": ["poêle à granulés", "Duepi", "myDPRemote", "Interstoves", "chauffage"]
+    "en": [
+      "pellet stove",
+      "Duepi",
+      "myDPRemote",
+      "Interstoves",
+      "heating"
+    ],
+    "fr": [
+      "poêle à granulés",
+      "Duepi",
+      "myDPRemote",
+      "Interstoves",
+      "chauffage"
+    ]
   },
-  "permissions": [],
+  "permissions": [
+    "homey:manager:api"
+  ],
   "brandColor": "#E8681A",
   "images": {
     "small": "/assets/images/small.png",
@@ -30,5 +48,15 @@
   "source": "https://github.com/Pepane13/homey-pellet-stove-manager",
   "bugs": {
     "url": "https://github.com/Pepane13/homey-pellet-stove-manager/issues"
+  },
+  "api": {
+    "getSources": {
+      "method": "GET",
+      "path": "/sources"
+    },
+    "getStatus": {
+      "method": "GET",
+      "path": "/status"
+    }
   }
 }

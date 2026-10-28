@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Comfort − thermostat gap",
+    "fr": "Écart confort − thermostat"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/gap.svg",
+  "insights": true,
+  "units": {
+    "en": "°C",
+    "fr": "°C"
+  },
+  "decimals": 1
+}

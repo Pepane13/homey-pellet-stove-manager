@@ -2,36 +2,165 @@
   "triggers": [
     {
       "id": "stove_alarm_raised",
-      "title": { "en": "A stove alarm was raised", "fr": "Une alarme du poêle s'est déclenchée" },
+      "title": {
+        "en": "A stove alarm was raised",
+        "fr": "Une alarme du poêle s'est déclenchée"
+      },
       "tokens": [
-        { "name": "code", "type": "number", "title": { "en": "Code", "fr": "Code" }, "example": 5 },
-        { "name": "message", "type": "string", "title": { "en": "Message", "fr": "Message" }, "example": { "en": "Out of pellets", "fr": "Manque de pellets" } }
+        {
+          "name": "code",
+          "type": "number",
+          "title": {
+            "en": "Code",
+            "fr": "Code"
+          },
+          "example": 5
+        },
+        {
+          "name": "message",
+          "type": "string",
+          "title": {
+            "en": "Message",
+            "fr": "Message"
+          },
+          "example": {
+            "en": "Out of pellets",
+            "fr": "Manque de pellets"
+          }
+        }
       ]
     },
     {
       "id": "stove_alarm_cleared",
-      "title": { "en": "The stove alarm was cleared", "fr": "L'alarme du poêle a disparu" }
+      "title": {
+        "en": "The stove alarm was cleared",
+        "fr": "L'alarme du poêle a disparu"
+      }
     },
     {
       "id": "stove_status_changed",
-      "title": { "en": "The stove status changed", "fr": "L'état du poêle a changé" },
+      "title": {
+        "en": "The stove status changed",
+        "fr": "L'état du poêle a changé"
+      },
       "tokens": [
-        { "name": "status", "type": "string", "title": { "en": "Status", "fr": "État" }, "example": { "en": "Heating", "fr": "En chauffe" } }
+        {
+          "name": "status",
+          "type": "string",
+          "title": {
+            "en": "Status",
+            "fr": "État"
+          },
+          "example": {
+            "en": "Heating",
+            "fr": "En chauffe"
+          }
+        }
       ]
     },
     {
       "id": "stove_connection_lost",
-      "title": { "en": "Connection to the stove was lost", "fr": "La liaison avec le poêle est perdue" }
+      "title": {
+        "en": "Connection to the stove was lost",
+        "fr": "La liaison avec le poêle est perdue"
+      }
+    },
+    {
+      "id": "sensor_unavailable",
+      "title": {
+        "en": "A temperature sensor became unavailable",
+        "fr": "Une sonde de température est indisponible"
+      },
+      "tokens": [
+        {
+          "name": "role",
+          "type": "string",
+          "title": {
+            "en": "Role",
+            "fr": "Rôle"
+          },
+          "example": {
+            "en": "Outdoor",
+            "fr": "Extérieur"
+          }
+        },
+        {
+          "name": "sensor",
+          "type": "string",
+          "title": {
+            "en": "Sensor",
+            "fr": "Sonde"
+          },
+          "example": "Météo extérieur Piscine"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "title": {
+            "en": "Reason",
+            "fr": "Raison"
+          },
+          "example": {
+            "en": "No recent value",
+            "fr": "Pas de valeur récente"
+          }
+        },
+        {
+          "name": "replacement",
+          "type": "string",
+          "title": {
+            "en": "Replacement",
+            "fr": "Remplaçante"
+          },
+          "example": "Météo couloir extérieur"
+        }
+      ]
+    },
+    {
+      "id": "sensor_restored",
+      "title": {
+        "en": "A temperature sensor is available again",
+        "fr": "Une sonde de température est de nouveau disponible"
+      },
+      "tokens": [
+        {
+          "name": "role",
+          "type": "string",
+          "title": {
+            "en": "Role",
+            "fr": "Rôle"
+          },
+          "example": {
+            "en": "Outdoor",
+            "fr": "Extérieur"
+          }
+        },
+        {
+          "name": "sensor",
+          "type": "string",
+          "title": {
+            "en": "Sensor",
+            "fr": "Sonde"
+          },
+          "example": "Météo extérieur Piscine"
+        }
+      ]
     }
   ],
   "conditions": [
     {
       "id": "stove_is_heating",
-      "title": { "en": "The stove !{{is|is not}} heating", "fr": "Le poêle !{{est|n'est pas}} en chauffe" }
+      "title": {
+        "en": "The stove !{{is|is not}} heating",
+        "fr": "Le poêle !{{est|n'est pas}} en chauffe"
+      }
     },
     {
       "id": "stove_has_alarm",
-      "title": { "en": "The stove !{{has|has no}} active alarm", "fr": "Le poêle !{{a|n'a pas}} d'alarme active" }
+      "title": {
+        "en": "The stove !{{has|has no}} active alarm",
+        "fr": "Le poêle !{{a|n'a pas}} d'alarme active"
+      }
     }
   ]
 }

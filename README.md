@@ -3,7 +3,7 @@
 Homey Pro app to monitor and manage pellet stoves driven by a **Duepi EVO** controller board
 (Interstoves, and other brands using the myDPRemote app), using the stove's **original WiFi module**.
 
-> **Status: 0.1 – read-only skeleton.** The app reads the stove; it does not send any command yet.
+> **Status: 0.2 – read-only.** The app reads the stove and the room/outdoor temperature sensors; it does not send any command yet.
 > Write commands (power level, on/off, alarm reset) will be enabled once tested on real hardware.
 
 ## Features (0.1)
@@ -21,12 +21,21 @@ Homey Pro app to monitor and manage pellet stoves driven by a **Duepi EVO** cont
 The ambient probe value 99.9 °C ("no probe connected", e.g. when the stove is driven by an external
 thermostat) is ignored.
 
+## Temperature sensors (0.2)
+
+In the app settings, choose for each role any temperature sensor available on your Homey
+(any device and any temperature capability): comfort sensor (optionally averaged with a second one),
+thermostat sensor, outdoor reference sensor, outdoor backup sensor and a weather forecast device.
+Each reading is validated (implausible or frozen value, device switched off); the outdoor backup
+bias is learnt and removed when the reference fails. The values appear on the stove device and in Insights.
+This uses the `homey:manager:api` permission (read-only access to the other devices).
+
 ## Roadmap
 
 1. Write commands (power 1–5, shutdown, alarm reset) after validation on hardware.
 2. Pellet consumption model, refill advice, monthly bag forecast, cost tracking.
 3. Cleaning and professional maintenance tracking (12 months or 1,200 h, whichever comes first).
-4. Thermostat integration (Netatmo or any Homey temperature sensor), anticipation with learning,
+4. Learning (heat losses, heating rate per power level), anticipation, thermostat control,
    direct regulation mode with fallback.
 5. Dashboard widget.
 
