@@ -28,6 +28,15 @@
 
   <div id="roles"></div>
 
+  <h2 data-i18n="settings.forecast_title"></h2>
+  <div class="role">
+    <div class="desc" data-i18n="settings.forecast_desc"></div>
+    <select id="forecastSource">
+      <option value="device" data-i18n="settings.forecast_device"></option>
+      <option value="meteofrance" data-i18n="settings.forecast_meteofrance"></option>
+    </select>
+  </div>
+
   <h2 data-i18n="settings.advanced"></h2>
   <div class="role">
     <label class="title" for="stale" data-i18n="settings.stale"></label>
@@ -106,6 +115,7 @@
       });
       el('weight').value = Math.round((config.comfort2Weight != null ? config.comfort2Weight : 0.5) * 100);
       el('stale').value = config.staleMinutes || 180;
+      el('forecastSource').value = config.forecastSource === 'meteofrance' ? 'meteofrance' : 'device';
     }
 
     function collect() {
@@ -120,6 +130,7 @@
       });
       out.comfort2Weight = Math.min(100, Math.max(0, Number(el('weight').value) || 50)) / 100;
       out.staleMinutes = Math.max(15, Number(el('stale').value) || 180);
+      out.forecastSource = el('forecastSource').value;
       return out;
     }
 
@@ -136,7 +147,16 @@
         html += row(t('settings.st_gap'), s.gap == null ? '—' : (s.gap > 0 ? '+' : '') + s.gap + ' °C');
         html += row(t('settings.st_outdoor'), deg(s.outdoor) + (s.outdoorSource ? ' · ' + t('settings.src_' + s.outdoorSource) + (s.outdoorCorrected ? ' ' + t('settings.corrected') : '') : ''), s.outdoor != null);
         if (s.outdoorOffset) html += row(t('settings.st_offset'), (s.outdoorOffset.value > 0 ? '+' : '') + s.outdoorOffset.value + ' °C (' + s.outdoorOffset.samples + ')');
+        html += row(t('settings.st_forecast_src'), s.forecastSource
+          ? t('settings.src_' + s.forecastSource) + (s.forecastName ? ' – ' + s.forecastName : '') + (s.forecastFallback ? ' (' + t('settings.st_fallback') + ')' : '')
+          : (s.forecastError || '—'), s.forecastSource != null && !s.forecastFallback);
+        html += row(t('settings.st_forecast_now'), deg(s.forecastNow));
         html += row(t('settings.st_forecast'), deg(s.forecastMin6h));
+        Object.keys(s.forecastAccuracy || {}).forEach(function (k) {
+          var a = s.forecastAccuracy[k];
+          html += row(t('settings.st_accuracy') + ' ' + t('settings.src_' + k),
+            t('settings.st_accuracy_val').replace('{mae}', a.mae).replace('{bias}', (a.bias > 0 ? '+' : '') + a.bias).replace('{n}', a.samples));
+        });
         Object.keys(s.roles).forEach(function (role) {
           var r = s.roles[role];
           if (r.reason === 'not_configured') return;

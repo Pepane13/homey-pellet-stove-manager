@@ -3,6 +3,7 @@
 const Homey = require('homey');
 const { HomeyDevices } = require('./lib/homey-devices');
 const { SensorHub } = require('./lib/sensors');
+const { MeteoFranceForecast } = require('./lib/forecast');
 
 const SENSOR_INTERVAL = 60 * 1000;
 
@@ -10,10 +11,19 @@ class PelletStoveApp extends Homey.App {
 
   async onInit() {
     this.devicesApi = new HomeyDevices(this.homey);
+    this.forecast = new MeteoFranceForecast({
+      getLocation: () => ({
+        latitude: this.homey.geolocation.getLatitude(),
+        longitude: this.homey.geolocation.getLongitude(),
+      }),
+      store: this.homey.settings,
+      log: this.log.bind(this),
+    });
     this.sensors = new SensorHub({
       readDevice: (id) => this.devicesApi.readDevice(id),
       getConfig: () => this.homey.settings.get('sensors'),
       store: this.homey.settings,
+      forecastProvider: this.forecast,
       log: this.log.bind(this),
     });
     this.sensors.on('sensor_unavailable', (e) => this.log(`Sensor ${e.role} unavailable (${e.reason})`));

@@ -75,7 +75,18 @@
     "reason_no_value": "No value",
     "reason_out_of_range": "Implausible value",
     "reason_device_off": "Device off, ignored",
-    "reason_stale": "No recent value"
+    "reason_stale": "No recent value",
+    "forecast_title": "Forecast source",
+    "forecast_desc": "Météo-France (AROME model, 1.5 to 2.5 km grid) via Open-Meteo, free and without an account. The Homey location, rounded to about 1 km, is sent to Open-Meteo once an hour. The forecast device above is used as fallback.",
+    "forecast_device": "Homey forecast device",
+    "forecast_meteofrance": "Météo-France AROME (Open-Meteo)",
+    "st_forecast_now": "Current forecast",
+    "st_forecast_src": "Forecast source",
+    "st_fallback": "fallback, Météo-France unavailable",
+    "st_accuracy": "Accuracy",
+    "st_accuracy_val": "mean error {mae} °C, bias {bias} °C ({n} h)",
+    "src_meteofrance": "Météo-France",
+    "src_device": "device"
   },
   "sensor_role": {
     "comfort": "Comfort sensor",

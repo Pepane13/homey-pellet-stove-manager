@@ -75,7 +75,18 @@
     "reason_no_value": "Pas de valeur",
     "reason_out_of_range": "Valeur aberrante",
     "reason_device_off": "Appareil éteint, ignorée",
-    "reason_stale": "Pas de valeur récente"
+    "reason_stale": "Pas de valeur récente",
+    "forecast_title": "Source de la prévision",
+    "forecast_desc": "Météo-France (modèle AROME, maille 1,5 à 2,5 km) via Open-Meteo, gratuit et sans compte. La position de la Homey, arrondie à environ 1 km, est envoyée à Open-Meteo une fois par heure. L'appareil de prévision ci-dessus sert de secours.",
+    "forecast_device": "Appareil de prévision Homey",
+    "forecast_meteofrance": "Météo-France AROME (Open-Meteo)",
+    "st_forecast_now": "Prévision actuelle",
+    "st_forecast_src": "Source de prévision",
+    "st_fallback": "secours, Météo-France indisponible",
+    "st_accuracy": "Précision",
+    "st_accuracy_val": "écart moyen {mae} °C, biais {bias} °C ({n} h)",
+    "src_meteofrance": "Météo-France",
+    "src_device": "appareil"
   },
   "sensor_role": {
     "comfort": "Sonde de confort",

@@ -30,6 +30,15 @@ Each reading is validated (implausible or frozen value, device switched off); th
 bias is learnt and removed when the reference fails. The values appear on the stove device and in Insights.
 This uses the `homey:manager:api` permission (read-only access to the other devices).
 
+## Météo-France forecast (0.2.1)
+
+The forecast can come from the Homey weather device or from Météo-France (AROME 1.5/2.5 km,
+blended with ARPEGE beyond two days) through the free [Open-Meteo](https://open-meteo.com) API
+(`meteofrance_seamless`, no key, non-commercial use). The Homey location, rounded to about 1 km, is
+sent once an hour (`homey:manager:geolocation` permission). If Open-Meteo is unreachable, the last
+forecast is kept for 6 hours, then the weather device is used. The mean error and bias of each
+forecast against the outdoor reference sensor are measured hourly and shown in the settings.
+
 ## Roadmap
 
 1. Write commands (power 1–5, shutdown, alarm reset) after validation on hardware.

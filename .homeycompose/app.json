@@ -1,6 +1,6 @@
 {
   "id": "com.pepane13.pelletstove",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -34,7 +34,8 @@
     ]
   },
   "permissions": [
-    "homey:manager:api"
+    "homey:manager:api",
+    "homey:manager:geolocation"
   ],
   "brandColor": "#E8681A",
   "images": {
