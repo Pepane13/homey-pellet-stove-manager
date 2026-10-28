@@ -1,0 +1,97 @@
+{
+  "name": {
+    "en": "Pellet stove (Duepi EVO)",
+    "fr": "Poêle à granulés (Duepi EVO)"
+  },
+  "class": "heater",
+  "capabilities": [
+    "stove_status",
+    "alarm_generic",
+    "stove_error",
+    "stove_power_level",
+    "measure_temperature.flue_gas",
+    "measure_temperature.board",
+    "stove_auger_speed",
+    "stove_exhaust_speed",
+    "stove_hours_total",
+    "stove_hours_service"
+  ],
+  "capabilitiesOptions": {
+    "measure_temperature.flue_gas": {
+      "title": { "en": "Flue gas temperature", "fr": "Température des fumées" }
+    },
+    "measure_temperature.board": {
+      "title": { "en": "Board temperature", "fr": "Température de la carte" }
+    },
+    "alarm_generic": {
+      "title": { "en": "Stove alarm", "fr": "Alarme du poêle" }
+    }
+  },
+  "platforms": ["local"],
+  "connectivity": ["cloud", "lan"],
+  "images": {
+    "small": "{{driverAssetsPath}}/images/small.png",
+    "large": "{{driverAssetsPath}}/images/large.png",
+    "xlarge": "{{driverAssetsPath}}/images/xlarge.png"
+  },
+  "pair": [
+    {
+      "id": "configure"
+    },
+    {
+      "id": "list_devices",
+      "template": "list_devices",
+      "navigation": { "next": "add_devices" }
+    },
+    {
+      "id": "add_devices",
+      "template": "add_devices"
+    }
+  ],
+  "settings": [
+    {
+      "type": "group",
+      "label": { "en": "Connection", "fr": "Connexion" },
+      "children": [
+        {
+          "id": "mode",
+          "type": "dropdown",
+          "value": "cloud",
+          "label": { "en": "Connection mode", "fr": "Mode de connexion" },
+          "values": [
+            { "id": "cloud", "label": { "en": "Duepi cloud relay", "fr": "Serveur Duepi" } },
+            { "id": "local", "label": { "en": "Local serial bridge (ESP-Link)", "fr": "Passerelle locale (ESP-Link)" } },
+            { "id": "simulator", "label": { "en": "Simulator (no stove)", "fr": "Simulateur (sans poêle)" } }
+          ]
+        },
+        {
+          "id": "host",
+          "type": "text",
+          "value": "1.duepiwebserver1.com",
+          "label": { "en": "Server or bridge address", "fr": "Adresse du serveur ou de la passerelle" }
+        },
+        {
+          "id": "port",
+          "type": "number",
+          "value": 3000,
+          "min": 1,
+          "max": 65535,
+          "label": { "en": "Port", "fr": "Port" }
+        },
+        {
+          "id": "poll_interval",
+          "type": "number",
+          "value": 60,
+          "min": 30,
+          "max": 600,
+          "units": { "en": "s", "fr": "s" },
+          "label": { "en": "Polling interval", "fr": "Intervalle de relève" },
+          "hint": {
+            "en": "One reading every 60 s is enough and keeps the vendor relay unloaded.",
+            "fr": "Une relève par minute suffit et ménage le serveur du fabricant."
+          }
+        }
+      ]
+    }
+  ]
+}

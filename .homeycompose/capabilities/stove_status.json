@@ -1,0 +1,70 @@
+{
+  "type": "enum",
+  "title": {
+    "en": "Stove status",
+    "fr": "État du poêle"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/flame.svg",
+  "insights": false,
+  "values": [
+    {
+      "id": "off",
+      "title": {
+        "en": "Off",
+        "fr": "Éteint"
+      }
+    },
+    {
+      "id": "ignition",
+      "title": {
+        "en": "Ignition",
+        "fr": "Allumage"
+      }
+    },
+    {
+      "id": "heating",
+      "title": {
+        "en": "Heating",
+        "fr": "En chauffe"
+      }
+    },
+    {
+      "id": "eco",
+      "title": {
+        "en": "Eco / standby",
+        "fr": "Éco / attente"
+      }
+    },
+    {
+      "id": "cooling",
+      "title": {
+        "en": "Cooling down",
+        "fr": "Refroidissement"
+      }
+    },
+    {
+      "id": "cleaning",
+      "title": {
+        "en": "Cleaning",
+        "fr": "Nettoyage"
+      }
+    },
+    {
+      "id": "alarm",
+      "title": {
+        "en": "Alarm",
+        "fr": "Alarme"
+      }
+    },
+    {
+      "id": "unknown",
+      "title": {
+        "en": "Unknown",
+        "fr": "Inconnu"
+      }
+    }
+  ]
+}

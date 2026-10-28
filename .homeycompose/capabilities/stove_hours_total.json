@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Total burn hours",
+    "fr": "Heures totales"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/clock.svg",
+  "insights": true,
+  "units": {
+    "en": "h",
+    "fr": "h"
+  },
+  "decimals": 0
+}

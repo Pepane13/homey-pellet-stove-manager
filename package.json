@@ -1,0 +1,16 @@
+{
+  "name": "com.pepane13.pelletstove",
+  "version": "0.1.0",
+  "description": "Pellet Stove Manager for Homey Pro – Duepi EVO pellet stoves",
+  "main": "app.js",
+  "private": true,
+  "license": "GPL-3.0-or-later",
+  "author": "Pepane13",
+  "engines": {
+    "node": ">=16"
+  },
+  "scripts": {
+    "test": "node --test test/*.test.js",
+    "validate": "homey app validate --level publish"
+  }
+}

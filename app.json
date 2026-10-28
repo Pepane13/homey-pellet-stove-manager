@@ -1,0 +1,494 @@
+{
+  "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
+  "id": "com.pepane13.pelletstove",
+  "version": "0.1.0",
+  "compatibility": ">=12.0.0",
+  "sdk": 3,
+  "platforms": [
+    "local"
+  ],
+  "name": {
+    "en": "Pellet Stove Manager",
+    "fr": "Gestion Poêle à Granulés"
+  },
+  "description": {
+    "en": "Monitor and manage your Duepi EVO pellet stove: status, alarms, burn hours and maintenance.",
+    "fr": "Surveillez et gérez votre poêle à granulés Duepi EVO : état, alarmes, heures de combustion et entretien."
+  },
+  "category": [
+    "climate"
+  ],
+  "tags": {
+    "en": [
+      "pellet stove",
+      "Duepi",
+      "myDPRemote",
+      "Interstoves",
+      "heating"
+    ],
+    "fr": [
+      "poêle à granulés",
+      "Duepi",
+      "myDPRemote",
+      "Interstoves",
+      "chauffage"
+    ]
+  },
+  "permissions": [],
+  "brandColor": "#E8681A",
+  "images": {
+    "small": "/assets/images/small.png",
+    "large": "/assets/images/large.png",
+    "xlarge": "/assets/images/xlarge.png"
+  },
+  "author": {
+    "name": "Pepane13"
+  },
+  "source": "https://github.com/Pepane13/homey-pellet-stove-manager",
+  "bugs": {
+    "url": "https://github.com/Pepane13/homey-pellet-stove-manager/issues"
+  },
+  "flow": {
+    "triggers": [
+      {
+        "id": "stove_alarm_raised",
+        "title": {
+          "en": "A stove alarm was raised",
+          "fr": "Une alarme du poêle s'est déclenchée"
+        },
+        "tokens": [
+          {
+            "name": "code",
+            "type": "number",
+            "title": {
+              "en": "Code",
+              "fr": "Code"
+            },
+            "example": 5
+          },
+          {
+            "name": "message",
+            "type": "string",
+            "title": {
+              "en": "Message",
+              "fr": "Message"
+            },
+            "example": {
+              "en": "Out of pellets",
+              "fr": "Manque de pellets"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "stove_alarm_cleared",
+        "title": {
+          "en": "The stove alarm was cleared",
+          "fr": "L'alarme du poêle a disparu"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "stove_status_changed",
+        "title": {
+          "en": "The stove status changed",
+          "fr": "L'état du poêle a changé"
+        },
+        "tokens": [
+          {
+            "name": "status",
+            "type": "string",
+            "title": {
+              "en": "Status",
+              "fr": "État"
+            },
+            "example": {
+              "en": "Heating",
+              "fr": "En chauffe"
+            }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "stove_connection_lost",
+        "title": {
+          "en": "Connection to the stove was lost",
+          "fr": "La liaison avec le poêle est perdue"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      }
+    ],
+    "conditions": [
+      {
+        "id": "stove_is_heating",
+        "title": {
+          "en": "The stove !{{is|is not}} heating",
+          "fr": "Le poêle !{{est|n'est pas}} en chauffe"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "stove_has_alarm",
+        "title": {
+          "en": "The stove !{{has|has no}} active alarm",
+          "fr": "Le poêle !{{a|n'a pas}} d'alarme active"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      }
+    ]
+  },
+  "drivers": [
+    {
+      "name": {
+        "en": "Pellet stove (Duepi EVO)",
+        "fr": "Poêle à granulés (Duepi EVO)"
+      },
+      "class": "heater",
+      "capabilities": [
+        "stove_status",
+        "alarm_generic",
+        "stove_error",
+        "stove_power_level",
+        "measure_temperature.flue_gas",
+        "measure_temperature.board",
+        "stove_auger_speed",
+        "stove_exhaust_speed",
+        "stove_hours_total",
+        "stove_hours_service"
+      ],
+      "capabilitiesOptions": {
+        "measure_temperature.flue_gas": {
+          "title": {
+            "en": "Flue gas temperature",
+            "fr": "Température des fumées"
+          }
+        },
+        "measure_temperature.board": {
+          "title": {
+            "en": "Board temperature",
+            "fr": "Température de la carte"
+          }
+        },
+        "alarm_generic": {
+          "title": {
+            "en": "Stove alarm",
+            "fr": "Alarme du poêle"
+          }
+        }
+      },
+      "platforms": [
+        "local"
+      ],
+      "connectivity": [
+        "cloud",
+        "lan"
+      ],
+      "images": {
+        "small": "/drivers/stove/assets/images/small.png",
+        "large": "/drivers/stove/assets/images/large.png",
+        "xlarge": "/drivers/stove/assets/images/xlarge.png"
+      },
+      "pair": [
+        {
+          "id": "configure"
+        },
+        {
+          "id": "list_devices",
+          "template": "list_devices",
+          "navigation": {
+            "next": "add_devices"
+          }
+        },
+        {
+          "id": "add_devices",
+          "template": "add_devices"
+        }
+      ],
+      "settings": [
+        {
+          "type": "group",
+          "label": {
+            "en": "Connection",
+            "fr": "Connexion"
+          },
+          "children": [
+            {
+              "id": "mode",
+              "type": "dropdown",
+              "value": "cloud",
+              "label": {
+                "en": "Connection mode",
+                "fr": "Mode de connexion"
+              },
+              "values": [
+                {
+                  "id": "cloud",
+                  "label": {
+                    "en": "Duepi cloud relay",
+                    "fr": "Serveur Duepi"
+                  }
+                },
+                {
+                  "id": "local",
+                  "label": {
+                    "en": "Local serial bridge (ESP-Link)",
+                    "fr": "Passerelle locale (ESP-Link)"
+                  }
+                },
+                {
+                  "id": "simulator",
+                  "label": {
+                    "en": "Simulator (no stove)",
+                    "fr": "Simulateur (sans poêle)"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "host",
+              "type": "text",
+              "value": "1.duepiwebserver1.com",
+              "label": {
+                "en": "Server or bridge address",
+                "fr": "Adresse du serveur ou de la passerelle"
+              }
+            },
+            {
+              "id": "port",
+              "type": "number",
+              "value": 3000,
+              "min": 1,
+              "max": 65535,
+              "label": {
+                "en": "Port",
+                "fr": "Port"
+              }
+            },
+            {
+              "id": "poll_interval",
+              "type": "number",
+              "value": 60,
+              "min": 30,
+              "max": 600,
+              "units": {
+                "en": "s",
+                "fr": "s"
+              },
+              "label": {
+                "en": "Polling interval",
+                "fr": "Intervalle de relève"
+              },
+              "hint": {
+                "en": "One reading every 60 s is enough and keeps the vendor relay unloaded.",
+                "fr": "Une relève par minute suffit et ménage le serveur du fabricant."
+              }
+            }
+          ]
+        }
+      ],
+      "id": "stove"
+    }
+  ],
+  "capabilities": {
+    "stove_auger_speed": {
+      "type": "number",
+      "title": {
+        "en": "Auger speed",
+        "fr": "Vitesse vis sans fin"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/auger.svg",
+      "insights": true,
+      "decimals": 0
+    },
+    "stove_error": {
+      "type": "string",
+      "title": {
+        "en": "Stove error",
+        "fr": "Erreur du poêle"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/alert.svg",
+      "insights": false
+    },
+    "stove_exhaust_speed": {
+      "type": "number",
+      "title": {
+        "en": "Exhaust fan",
+        "fr": "Extracteur"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/fan.svg",
+      "insights": true,
+      "units": {
+        "en": "rpm",
+        "fr": "tr/min"
+      },
+      "decimals": 0
+    },
+    "stove_hours_service": {
+      "type": "number",
+      "title": {
+        "en": "Hours since service",
+        "fr": "Heures depuis l'entretien"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/wrench.svg",
+      "insights": true,
+      "units": {
+        "en": "h",
+        "fr": "h"
+      },
+      "decimals": 0
+    },
+    "stove_hours_total": {
+      "type": "number",
+      "title": {
+        "en": "Total burn hours",
+        "fr": "Heures totales"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/clock.svg",
+      "insights": true,
+      "units": {
+        "en": "h",
+        "fr": "h"
+      },
+      "decimals": 0
+    },
+    "stove_power_level": {
+      "type": "number",
+      "title": {
+        "en": "Power level",
+        "fr": "Puissance"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/power.svg",
+      "insights": true,
+      "min": 0,
+      "max": 5,
+      "step": 1,
+      "decimals": 0
+    },
+    "stove_status": {
+      "type": "enum",
+      "title": {
+        "en": "Stove status",
+        "fr": "État du poêle"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/flame.svg",
+      "insights": false,
+      "values": [
+        {
+          "id": "off",
+          "title": {
+            "en": "Off",
+            "fr": "Éteint"
+          }
+        },
+        {
+          "id": "ignition",
+          "title": {
+            "en": "Ignition",
+            "fr": "Allumage"
+          }
+        },
+        {
+          "id": "heating",
+          "title": {
+            "en": "Heating",
+            "fr": "En chauffe"
+          }
+        },
+        {
+          "id": "eco",
+          "title": {
+            "en": "Eco / standby",
+            "fr": "Éco / attente"
+          }
+        },
+        {
+          "id": "cooling",
+          "title": {
+            "en": "Cooling down",
+            "fr": "Refroidissement"
+          }
+        },
+        {
+          "id": "cleaning",
+          "title": {
+            "en": "Cleaning",
+            "fr": "Nettoyage"
+          }
+        },
+        {
+          "id": "alarm",
+          "title": {
+            "en": "Alarm",
+            "fr": "Alarme"
+          }
+        },
+        {
+          "id": "unknown",
+          "title": {
+            "en": "Unknown",
+            "fr": "Inconnu"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Auger speed",
+    "fr": "Vitesse vis sans fin"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/auger.svg",
+  "insights": true,
+  "decimals": 0
+}

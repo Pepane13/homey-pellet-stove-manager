@@ -1,0 +1,71 @@
+<header class="homey-header">
+  <h1 class="homey-title" data-i18n="pair.title"></h1>
+  <p class="homey-subtitle" data-i18n="pair.subtitle"></p>
+</header>
+
+<form id="form" class="homey-form" onsubmit="return false">
+  <div class="homey-form-group">
+    <label class="homey-form-label" for="mode" data-i18n="pair.mode"></label>
+    <select class="homey-form-select" id="mode">
+      <option value="cloud" data-i18n="pair.mode_cloud"></option>
+      <option value="local" data-i18n="pair.mode_local"></option>
+      <option value="simulator" data-i18n="pair.mode_simulator"></option>
+    </select>
+  </div>
+
+  <div class="homey-form-group" id="group-code">
+    <label class="homey-form-label" for="code" data-i18n="pair.code"></label>
+    <input class="homey-form-input" id="code" type="password" autocomplete="off" spellcheck="false" />
+    <p class="homey-form-hint" data-i18n="pair.code_hint"></p>
+  </div>
+
+  <div class="homey-form-group" id="group-host">
+    <label class="homey-form-label" for="host" data-i18n="pair.host"></label>
+    <input class="homey-form-input" id="host" type="text" value="1.duepiwebserver1.com" spellcheck="false" />
+  </div>
+
+  <div class="homey-form-group" id="group-port">
+    <label class="homey-form-label" for="port" data-i18n="pair.port"></label>
+    <input class="homey-form-input" id="port" type="number" value="3000" min="1" max="65535" />
+  </div>
+
+  <p id="message" class="homey-form-hint"></p>
+  <button class="homey-button-primary-full" id="test" data-i18n="pair.test"></button>
+</form>
+
+<script type="application/javascript">
+  const $ = (id) => document.getElementById(id);
+  const defaults = { cloud: ['1.duepiwebserver1.com', 3000], local: ['', 23] };
+
+  function refresh() {
+    const mode = $('mode').value;
+    $('group-code').style.display = mode === 'cloud' ? '' : 'none';
+    $('group-host').style.display = mode === 'simulator' ? 'none' : '';
+    $('group-port').style.display = mode === 'simulator' ? 'none' : '';
+    if (defaults[mode]) {
+      $('host').value = defaults[mode][0];
+      $('port').value = defaults[mode][1];
+    }
+  }
+  $('mode').addEventListener('change', refresh);
+  refresh();
+
+  $('test').addEventListener('click', async () => {
+    $('test').classList.add('is-loading');
+    $('message').textContent = Homey.__('pair.testing');
+    try {
+      const result = await Homey.emit('configure', {
+        mode: $('mode').value,
+        code: $('code').value,
+        host: $('host').value.trim(),
+        port: Number($('port').value),
+      });
+      $('message').textContent = result.message;
+      Homey.showView('list_devices');
+    } catch (err) {
+      $('message').textContent = err.message || String(err);
+    } finally {
+      $('test').classList.remove('is-loading');
+    }
+  });
+</script>

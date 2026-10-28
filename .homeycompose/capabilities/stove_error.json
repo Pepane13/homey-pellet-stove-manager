@@ -1,0 +1,12 @@
+{
+  "type": "string",
+  "title": {
+    "en": "Stove error",
+    "fr": "Erreur du poêle"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/alert.svg",
+  "insights": false
+}

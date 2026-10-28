@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Hours since service",
+    "fr": "Heures depuis l'entretien"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/wrench.svg",
+  "insights": true,
+  "units": {
+    "en": "h",
+    "fr": "h"
+  },
+  "decimals": 0
+}

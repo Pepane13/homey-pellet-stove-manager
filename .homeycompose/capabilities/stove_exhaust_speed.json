@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Exhaust fan",
+    "fr": "Extracteur"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/fan.svg",
+  "insights": true,
+  "units": {
+    "en": "rpm",
+    "fr": "tr/min"
+  },
+  "decimals": 0
+}

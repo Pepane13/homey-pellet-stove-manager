@@ -1,0 +1,34 @@
+{
+  "pair": {
+    "title": "Connect your pellet stove",
+    "subtitle": "Duepi EVO board with the original WiFi module (myDPRemote).",
+    "mode": "Connection",
+    "mode_cloud": "Duepi cloud relay (as myDPRemote)",
+    "mode_local": "Local serial bridge (ESP-Link / ser2net)",
+    "mode_simulator": "Simulator (no stove, for testing)",
+    "code": "Device code",
+    "code_hint": "Printed on the WiFi module box and shown in myDPRemote settings. It is stored on your Homey only.",
+    "host": "Server or bridge address",
+    "port": "Port",
+    "test": "Test the connection",
+    "testing": "Connecting to the stove…",
+    "success": "Stove found: __status__, __hours__ burn hours.",
+    "device_name": "Pellet stove",
+    "error_code": "Please enter the device code.",
+    "error_host": "Please enter the server or bridge address.",
+    "error_connect": "Connection failed: __error__"
+  },
+  "device": {
+    "unreachable": "Stove unreachable"
+  },
+  "status": {
+    "off": "Off",
+    "ignition": "Ignition",
+    "heating": "Heating",
+    "eco": "Eco / standby",
+    "cooling": "Cooling down",
+    "cleaning": "Cleaning",
+    "alarm": "Alarm",
+    "unknown": "Unknown"
+  }
+}

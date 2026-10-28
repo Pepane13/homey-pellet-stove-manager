@@ -1,0 +1,16 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Power level",
+    "fr": "Puissance"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/power.svg",
+  "insights": true,
+  "min": 0,
+  "max": 5,
+  "step": 1,
+  "decimals": 0
+}
