@@ -10,13 +10,14 @@
     "code_hint": "Imprimé sur la boîte du module WiFi et visible dans les réglages de myDPRemote. Il est conservé uniquement sur votre Homey.",
     "host": "Adresse du serveur ou de la passerelle",
     "port": "Port",
-    "test": "Tester la connexion",
+    "test": "Tester et ajouter le poêle",
     "testing": "Connexion au poêle…",
     "success": "Poêle trouvé : __status__, __hours__ heures de combustion.",
     "device_name": "Poêle à granulés",
     "error_code": "Saisissez le code dispositif.",
     "error_host": "Saisissez l'adresse du serveur ou de la passerelle.",
-    "error_connect": "Échec de la connexion : __error__"
+    "error_connect": "Échec de la connexion : __error__",
+    "device_name_simulator": "Poêle à granulés (simulateur)"
   },
   "device": {
     "unreachable": "Poêle injoignable"

@@ -16,8 +16,7 @@ class StoveDriver extends Homey.Driver {
   }
 
   async onPair(session) {
-    let found = null;
-
+    // Single-screen pairing: the view tests the connection, then creates the device itself.
     session.setHandler('configure', async (data) => {
       const config = {
         mode: ['cloud', 'local', 'simulator'].includes(data.mode) ? data.mode : 'cloud',
@@ -26,46 +25,44 @@ class StoveDriver extends Homey.Driver {
         port: Number(data.port) || undefined,
       };
       if (config.mode === 'cloud' && !config.code) throw new Error(this.homey.__('pair.error_code'));
-      if (config.mode !== 'simulator' && !config.host) throw new Error(this.homey.__('pair.error_host'));
+      if (config.mode === 'local' && !config.host) throw new Error(this.homey.__('pair.error_host'));
 
       const connection = createConnection(config, this.log.bind(this));
+      let status;
+      let hours = null;
       try {
         const client = new DuepiClient(connection);
-        const status = await client.read('status');
-        const hours = await client.read('hoursTotal').catch(() => null);
-        found = { config, hours };
-        return {
-          message: this.homey.__('pair.success', {
-            status: this.homey.__(`status.${status.status}`),
-            hours: hours == null ? '?' : hours,
-          }),
-        };
+        status = await client.read('status');
+        hours = await client.read('hoursTotal').catch(() => null);
       } catch (err) {
         this.log('Pairing test failed:', err.message);
         throw new Error(this.homey.__('pair.error_connect', { error: err.message }));
       } finally {
         connection.close();
       }
-    });
 
-    session.setHandler('list_devices', async () => {
-      if (!found) return [];
-      const { config } = found;
-      // The device id is a hash: the device code itself is a credential and is only kept in the store.
+      // The device id is a hash: the device code is a credential and is only kept in the store.
       const id = crypto.createHash('sha256')
-        .update(`${config.mode}|${config.code || config.host}`)
+        .update(`${config.mode}|${config.code || config.host || 'simulator'}`)
         .digest('hex')
         .slice(0, 16);
-      return [{
-        name: this.homey.__('pair.device_name'),
-        data: { id },
-        store: { code: config.code || null },
-        settings: {
-          mode: config.mode,
-          host: config.mode === 'simulator' ? '' : config.host,
-          port: config.port || (config.mode === 'local' ? 23 : 3000),
+      const isSimulator = config.mode === 'simulator';
+      return {
+        message: this.homey.__('pair.success', {
+          status: this.homey.__(`status.${status.status}`),
+          hours: hours == null ? '?' : hours,
+        }),
+        device: {
+          name: this.homey.__(isSimulator ? 'pair.device_name_simulator' : 'pair.device_name'),
+          data: { id },
+          store: { code: config.code || null },
+          settings: {
+            mode: config.mode,
+            host: isSimulator ? '' : config.host,
+            port: config.port || (config.mode === 'local' ? 23 : 3000),
+          },
         },
-      }];
+      };
     });
   }
 

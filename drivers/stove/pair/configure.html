@@ -3,69 +3,87 @@
   <p class="homey-subtitle" data-i18n="pair.subtitle"></p>
 </header>
 
-<form id="form" class="homey-form" onsubmit="return false">
+<form id="psm-form" class="homey-form" onsubmit="return false">
   <div class="homey-form-group">
-    <label class="homey-form-label" for="mode" data-i18n="pair.mode"></label>
-    <select class="homey-form-select" id="mode">
+    <label class="homey-form-label" for="psm-mode" data-i18n="pair.mode"></label>
+    <select class="homey-form-select" id="psm-mode">
       <option value="cloud" data-i18n="pair.mode_cloud"></option>
       <option value="local" data-i18n="pair.mode_local"></option>
       <option value="simulator" data-i18n="pair.mode_simulator"></option>
     </select>
   </div>
 
-  <div class="homey-form-group" id="group-code">
-    <label class="homey-form-label" for="code" data-i18n="pair.code"></label>
-    <input class="homey-form-input" id="code" type="password" autocomplete="off" spellcheck="false" />
+  <div class="homey-form-group" id="psm-group-code">
+    <label class="homey-form-label" for="psm-code" data-i18n="pair.code"></label>
+    <input class="homey-form-input" id="psm-code" type="password" autocomplete="off" spellcheck="false" />
     <p class="homey-form-hint" data-i18n="pair.code_hint"></p>
   </div>
 
-  <div class="homey-form-group" id="group-host">
-    <label class="homey-form-label" for="host" data-i18n="pair.host"></label>
-    <input class="homey-form-input" id="host" type="text" value="1.duepiwebserver1.com" spellcheck="false" />
+  <div class="homey-form-group" id="psm-group-host">
+    <label class="homey-form-label" for="psm-host" data-i18n="pair.host"></label>
+    <input class="homey-form-input" id="psm-host" type="text" value="1.duepiwebserver1.com" spellcheck="false" />
   </div>
 
-  <div class="homey-form-group" id="group-port">
-    <label class="homey-form-label" for="port" data-i18n="pair.port"></label>
-    <input class="homey-form-input" id="port" type="number" value="3000" min="1" max="65535" />
+  <div class="homey-form-group" id="psm-group-port">
+    <label class="homey-form-label" for="psm-port" data-i18n="pair.port"></label>
+    <input class="homey-form-input" id="psm-port" type="number" value="3000" min="1" max="65535" />
   </div>
 
-  <p id="message" class="homey-form-hint"></p>
-  <button class="homey-button-primary-full" id="test" data-i18n="pair.test"></button>
+  <p id="psm-message" class="homey-form-hint"></p>
+  <button type="button" class="homey-button-primary-full" id="psm-submit" data-i18n="pair.test"></button>
 </form>
 
 <script type="application/javascript">
-  const $ = (id) => document.getElementById(id);
-  const defaults = { cloud: ['1.duepiwebserver1.com', 3000], local: ['', 23] };
+  (function () {
+    var el = function (id) { return document.getElementById(id); };
+    var defaults = { cloud: ['1.duepiwebserver1.com', 3000], local: ['', 23] };
+    var busy = false;
 
-  function refresh() {
-    const mode = $('mode').value;
-    $('group-code').style.display = mode === 'cloud' ? '' : 'none';
-    $('group-host').style.display = mode === 'simulator' ? 'none' : '';
-    $('group-port').style.display = mode === 'simulator' ? 'none' : '';
-    if (defaults[mode]) {
-      $('host').value = defaults[mode][0];
-      $('port').value = defaults[mode][1];
+    function show(id, visible) {
+      el(id).style.display = visible ? '' : 'none';
     }
-  }
-  $('mode').addEventListener('change', refresh);
-  refresh();
 
-  $('test').addEventListener('click', async () => {
-    $('test').classList.add('is-loading');
-    $('message').textContent = Homey.__('pair.testing');
-    try {
-      const result = await Homey.emit('configure', {
-        mode: $('mode').value,
-        code: $('code').value,
-        host: $('host').value.trim(),
-        port: Number($('port').value),
-      });
-      $('message').textContent = result.message;
-      Homey.showView('list_devices');
-    } catch (err) {
-      $('message').textContent = err.message || String(err);
-    } finally {
-      $('test').classList.remove('is-loading');
+    function refresh() {
+      var mode = el('psm-mode').value;
+      show('psm-group-code', mode === 'cloud');
+      show('psm-group-host', mode !== 'simulator');
+      show('psm-group-port', mode !== 'simulator');
+      if (defaults[mode]) {
+        el('psm-host').value = defaults[mode][0];
+        el('psm-port').value = defaults[mode][1];
+      }
+      el('psm-message').textContent = '';
     }
-  });
+
+    el('psm-mode').addEventListener('change', refresh);
+    refresh();
+
+    el('psm-submit').addEventListener('click', function () {
+      if (busy) return;
+      busy = true;
+      el('psm-submit').classList.add('is-loading');
+      el('psm-message').textContent = Homey.__('pair.testing');
+
+      Homey.emit('configure', {
+        mode: el('psm-mode').value,
+        code: el('psm-code').value,
+        host: el('psm-host').value.trim(),
+        port: Number(el('psm-port').value)
+      })
+        .then(function (result) {
+          el('psm-message').textContent = result.message;
+          return Homey.createDevice(result.device);
+        })
+        .then(function () {
+          Homey.done();
+        })
+        .catch(function (err) {
+          el('psm-message').textContent = (err && err.message) || String(err);
+        })
+        .then(function () {
+          busy = false;
+          el('psm-submit').classList.remove('is-loading');
+        });
+    });
+  })();
 </script>

@@ -10,13 +10,14 @@
     "code_hint": "Printed on the WiFi module box and shown in myDPRemote settings. It is stored on your Homey only.",
     "host": "Server or bridge address",
     "port": "Port",
-    "test": "Test the connection",
+    "test": "Test and add the stove",
     "testing": "Connecting to the stove…",
     "success": "Stove found: __status__, __hours__ burn hours.",
     "device_name": "Pellet stove",
     "error_code": "Please enter the device code.",
     "error_host": "Please enter the server or bridge address.",
-    "error_connect": "Connection failed: __error__"
+    "error_connect": "Connection failed: __error__",
+    "device_name_simulator": "Pellet stove (simulator)"
   },
   "device": {
     "unreachable": "Stove unreachable"
