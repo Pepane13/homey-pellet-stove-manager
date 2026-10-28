@@ -42,6 +42,8 @@ class StoveDevice extends Homey.Device {
     if (sensors.state) this._onSensors(sensors.state);
     this._onPlan = (plan) => this._applyPlan(plan).catch(this.error);
     this.homey.app.on('plan', this._onPlan);
+    this._onStartDue = (e) => this.homey.flow.getDeviceTriggerCard('heat_start_due').trigger(this, e).catch(this.error);
+    this.homey.app.on('heat_start_due', this._onStartDue);
 
     this._connect();
     this._schedule(2000);
@@ -203,6 +205,7 @@ class StoveDevice extends Homey.Device {
       sensors.off('sensor_restored', this._onSensorUp);
     }
     if (this._onPlan) this.homey.app.off('plan', this._onPlan);
+    if (this._onStartDue) this.homey.app.off('heat_start_due', this._onStartDue);
     this.homey.clearTimeout(this.pollTimer);
     if (this.connection) this.connection.close();
   }

@@ -124,7 +124,10 @@
     "phase_off": "stove off",
     "phase_heating": "heating",
     "phase_other": "transition",
-    "phase_unknown": "stove state unknown"
+    "phase_unknown": "stove state unknown",
+    "st_targets": "Flow targets",
+    "targets_none": "none",
+    "plan_from_settings": "(settings preview)"
   },
   "sensor_role": {
     "comfort": "Comfort sensor",

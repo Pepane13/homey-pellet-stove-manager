@@ -225,7 +225,10 @@
           if (r.reason === 'not_configured') return;
           html += row(t('settings.role_' + role) + ' – ' + (r.name || ''), r.ok ? deg(r.value) : t('settings.reason_' + r.reason), r.ok);
         });
-        html += row(t('settings.st_plan'), planText(s), s.plan ? s.plan.reachable : undefined);
+        html += row(t('settings.st_targets'), (s.targets && s.targets.length)
+          ? s.targets.map(function (x) { return x.temperature + ' °C · ' + dhm(x.at, s.timeZone); }).join(', ')
+          : t('settings.targets_none'));
+        html += row(t('settings.st_plan'), planText(s) + (s.plan && s.plan.source === 'settings' ? ' ' + t('settings.plan_from_settings') : ''), s.plan ? s.plan.reachable : undefined);
         el('status').innerHTML = html;
         showLearning(s);
       });

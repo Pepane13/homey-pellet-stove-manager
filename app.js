@@ -5,6 +5,7 @@ const { HomeyDevices } = require('./lib/homey-devices');
 const { SensorHub } = require('./lib/sensors');
 const { MeteoFranceForecast, valueAt } = require('./lib/forecast');
 const { ThermalLearner, nextOccurrence } = require('./lib/thermal');
+const { TargetPlanner } = require('./lib/targets');
 
 const ANTICIPATION_DEFAULTS = Object.freeze({ target: 21, time: '06:20', sensor: 'comfort' });
 
@@ -33,6 +34,10 @@ class PelletStoveApp extends Homey.App {
       store: this.homey.settings,
       timeZone: () => this.homey.clock.getTimezone(),
       log: this.log.bind(this),
+    });
+    this.targets = new TargetPlanner({
+      store: this.homey.settings,
+      timeZone: () => this.homey.clock.getTimezone(),
     });
     this.stoveStatus = null;
     this.plan = null;
@@ -104,15 +109,30 @@ class PelletStoveApp extends Homey.App {
         stove: this.stoveStatus,
       });
       const cfg = this.anticipationConfig();
+      const tz = this.homey.clock.getTimezone();
       const outdoorAt = this._outdoorForecast(state);
-      const at = nextOccurrence(cfg.time, Date.now(), this.homey.clock.getTimezone());
       const current = cfg.sensor === 'regulation' ? state.regulation : state.comfort;
-      this.plan = outdoorAt && at && current != null
-        ? this.thermal.plan({
-          sensor: cfg.sensor, target: Number(cfg.target), at, current, outdoorAt,
-          heating: ['ignition', 'heating', 'eco'].includes(this.stoveStatus),
-        })
-        : null;
+      const heating = ['ignition', 'heating', 'eco'].includes(this.stoveStatus);
+      const planFor = (target, at) => (outdoorAt && at && current != null
+        ? this.thermal.plan({ sensor: cfg.sensor, target: Number(target), at, current, outdoorAt, heating })
+        : null);
+
+      // Targets set by Flows: raise « time to start » when due
+      const { due, next } = this.targets.evaluate((t) => planFor(t.temperature, t.at));
+      for (const d of due) {
+        this.log(`Start due for ${d.target.temperature} °C at ${d.target.time} (needed ${d.needed})`);
+        this.emit('heat_start_due', {
+          target: d.target.temperature, time: d.target.time, lead: d.lead, needed: d.needed, reachable: d.reachable,
+        });
+      }
+
+      // Shown plan: next Flow target, else the preview target of the settings
+      this.plan = next && next.plan
+        ? { ...next.plan, source: 'flow', time: next.target.time }
+        : (() => {
+          const p = planFor(cfg.target, nextOccurrence(cfg.time, Date.now(), tz));
+          return p && { ...p, source: 'settings', time: cfg.time };
+        })();
       this.emit('plan', this.plan);
     } catch (err) {
       this.error('Anticipation failed:', err.message);
@@ -138,6 +158,7 @@ class PelletStoveApp extends Homey.App {
       roles,
       thermal: this.thermal.summary(),
       plan: this.plan,
+      targets: this.targets.list(),
       anticipation: this.anticipationConfig(),
       stoveStatus: this.stoveStatus,
       timeZone: this.homey.clock.getTimezone(),

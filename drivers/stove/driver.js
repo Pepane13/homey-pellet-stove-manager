@@ -12,6 +12,19 @@ class StoveDriver extends Homey.Driver {
       .registerRunListener(async ({ device }) => device.getCapabilityValue('stove_status') === 'heating');
     this.homey.flow.getConditionCard('stove_has_alarm')
       .registerRunListener(async ({ device }) => device.getCapabilityValue('alarm_generic') === true);
+    this.homey.flow.getConditionCard('heat_target_pending')
+      .registerRunListener(async () => this.homey.app.targets.list().length > 0);
+    this.homey.flow.getActionCard('set_heat_target')
+      .registerRunListener(async ({ temperature, time }) => {
+        const t = this.homey.app.targets.add(temperature, time);
+        this.log(`Target ${t.temperature} °C at ${t.time}`);
+        this.homey.app.refreshSensors();
+      });
+    this.homey.flow.getActionCard('cancel_heat_targets')
+      .registerRunListener(async () => {
+        this.homey.app.targets.cancel();
+        this.homey.app.refreshSensors();
+      });
     this.log('Pellet stove driver initialised');
   }
 

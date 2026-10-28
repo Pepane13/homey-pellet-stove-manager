@@ -145,6 +145,64 @@
           "example": "Météo extérieur Piscine"
         }
       ]
+    },
+    {
+      "id": "heat_start_due",
+      "title": {
+        "en": "It is time to start heating for a target",
+        "fr": "Il est temps d'allumer pour un objectif"
+      },
+      "hint": {
+        "en": "Raised at the start time computed for a target set with « Reach … °C at … ». If the room is already warm enough, raised 5 minutes before the target time with « Heating needed » = no.",
+        "fr": "Déclenché à l'heure d'allumage calculée pour un objectif fixé avec « Atteindre … °C à … ». Si la pièce est déjà assez chaude, déclenché 5 minutes avant l'heure visée avec « Chauffe nécessaire » = non."
+      },
+      "tokens": [
+        {
+          "name": "target",
+          "type": "number",
+          "title": {
+            "en": "Target temperature",
+            "fr": "Température visée"
+          },
+          "example": 21
+        },
+        {
+          "name": "time",
+          "type": "string",
+          "title": {
+            "en": "Target time",
+            "fr": "Heure visée"
+          },
+          "example": "06:20"
+        },
+        {
+          "name": "lead",
+          "type": "number",
+          "title": {
+            "en": "Minutes before the target",
+            "fr": "Minutes avant l'objectif"
+          },
+          "example": 150
+        },
+        {
+          "name": "needed",
+          "type": "boolean",
+          "title": {
+            "en": "Heating needed",
+            "fr": "Chauffe nécessaire"
+          },
+          "example": true
+        },
+        {
+          "name": "reachable",
+          "type": "boolean",
+          "title": {
+            "en": "Target reachable in time",
+            "fr": "Objectif atteignable à temps"
+          },
+          "example": true
+        }
+      ]
     }
   ],
   "conditions": [
@@ -160,6 +218,54 @@
       "title": {
         "en": "The stove !{{has|has no}} active alarm",
         "fr": "Le poêle !{{a|n'a pas}} d'alarme active"
+      }
+    },
+    {
+      "id": "heat_target_pending",
+      "title": {
+        "en": "A temperature target !{{is|is not}} pending",
+        "fr": "Un objectif de température !{{est|n'est pas}} en attente"
+      }
+    }
+  ],
+  "actions": [
+    {
+      "id": "set_heat_target",
+      "title": {
+        "en": "Reach a temperature at a time",
+        "fr": "Atteindre une température à une heure"
+      },
+      "titleFormatted": {
+        "en": "Reach [[temperature]] °C at [[time]]",
+        "fr": "Atteindre [[temperature]] °C à [[time]]"
+      },
+      "hint": {
+        "en": "The app computes the start time from what it has learnt and raises « It is time to start heating for a target ». It does not control the stove or the thermostat itself.",
+        "fr": "L'app calcule l'heure d'allumage avec ce qu'elle a appris et déclenche « Il est temps d'allumer pour un objectif ». Elle ne commande ni le poêle ni le thermostat elle-même."
+      },
+      "args": [
+        {
+          "type": "number",
+          "name": "temperature",
+          "min": 5,
+          "max": 30,
+          "step": 0.5,
+          "placeholder": {
+            "en": "21",
+            "fr": "21"
+          }
+        },
+        {
+          "type": "time",
+          "name": "time"
+        }
+      ]
+    },
+    {
+      "id": "cancel_heat_targets",
+      "title": {
+        "en": "Cancel the temperature targets",
+        "fr": "Annuler les objectifs de température"
       }
     }
   ]

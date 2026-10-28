@@ -54,8 +54,10 @@ Starting values come from the analysis of the consumption history; each one coun
 observations, then the estimate follows a moving average over about twenty. From these parameters,
 the current temperature and the outdoor forecast (Météo-France curve corrected by its measured bias,
 or the trend towards the 6-hour minimum), the app computes continuously the latest start time that
-reaches a target temperature at a target time. The target is set in the settings for now; it will
-come from Flow cards in 0.4. Nothing is controlled yet.
+reaches a target temperature at a target time. Targets come from the Flow action « Reach [21] °C at [06:20] »
+(0.3.1); the trigger « It is time to start heating for a target » is raised at the computed time and the
+Flow switches the thermostat. A preview target in the settings is used when no Flow target is pending.
+The app itself controls nothing.
 
 ## Roadmap
 

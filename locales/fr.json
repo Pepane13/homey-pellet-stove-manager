@@ -124,7 +124,10 @@
     "phase_off": "poêle éteint",
     "phase_heating": "chauffe",
     "phase_other": "transition",
-    "phase_unknown": "état du poêle inconnu"
+    "phase_unknown": "état du poêle inconnu",
+    "st_targets": "Objectifs des Flows",
+    "targets_none": "aucun",
+    "plan_from_settings": "(aperçu des réglages)"
   },
   "sensor_role": {
     "comfort": "Sonde de confort",
