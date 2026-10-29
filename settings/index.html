@@ -15,6 +15,9 @@
     .row { display: flex; gap: 8px; align-items: center; margin-top: 6px; font-size: 13px; }
     .row input[type=number] { width: 90px; }
     button { width: 100%; padding: 11px; border: 0; border-radius: 8px; background: #e8681a; color: #fff; font-size: 15px; font-weight: 600; margin-top: 16px; }
+    #insChart svg { width: 100%; height: auto; display: block; margin: 6px 0; }
+    .legend { font-size: 11px; color: #555; display: flex; gap: 12px; flex-wrap: wrap; }
+    .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
     #msg, #msg2 { margin-top: 8px; font-size: 13px; min-height: 18px; }
     button.secondary { background: #fff; color: #e8681a; border: 1px solid #e8681a; padding: 9px; font-size: 14px; margin-top: 12px; }
     td.sm { font-size: 12px; color: #555; }
@@ -64,6 +67,13 @@
 
   <h2 data-i18n="settings.status"></h2>
   <table id="status"><tr><td data-i18n="settings.loading"></td></tr></table>
+
+  <h2 data-i18n="settings.ins_title"></h2>
+  <p class="hint" data-i18n="settings.ins_desc"></p>
+  <div id="insChart"></div>
+  <table id="insTable"></table>
+  <div class="row"><label for="worksDate" style="flex:1" data-i18n="settings.ins_date"></label><input type="date" id="worksDate" style="width:150px;padding:6px;border:1px solid #ccd;border-radius:6px"></div>
+  <button id="saveWorks" class="secondary" data-i18n="settings.ins_save"></button>
 
   <h2 data-i18n="settings.learn_title"></h2>
   <p class="hint" data-i18n="settings.learn_desc"></p>
@@ -175,7 +185,62 @@
       return t(p.reachable ? 'settings.plan_start' : 'settings.plan_unreachable', tok);
     }
 
+    var COLORS = { comfort: '#e8681a', regulation: '#2563eb', median: '#111' };
+
+    function showInsulation(s) {
+      var ins = s.insulation;
+      if (!ins || !ins.nights.length) { el('insChart').innerHTML = '<p class="hint">' + esc(t('settings.ins_none')) + '</p>'; el('insTable').innerHTML = ''; return; }
+      var n = ins.nights;
+      var W = 340, H = 170, L = 34, R = 8, T = 8, B = 22;
+      var t0 = n[0].at, t1 = n[n.length - 1].at; if (t1 - t0 < 7 * 864e5) t1 = t0 + 7 * 864e5;
+      var vals = []; n.forEach(function (x) { if (x.comfort != null) vals.push(x.comfort); if (x.regulation != null) vals.push(x.regulation); });
+      var vmax = Math.max.apply(null, vals) * 1.15, vmin = 0;
+      var X = function (at) { return L + (at - t0) / (t1 - t0) * (W - L - R); };
+      var Y = function (v) { return T + (1 - (v - vmin) / (vmax - vmin)) * (H - T - B); };
+      var svg = '<svg viewBox="0 0 ' + W + ' ' + H + '" role="img">';
+      for (var g = 0; g <= 4; g++) {
+        var gv = vmin + (vmax - vmin) * g / 4;
+        svg += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(gv) + '" y2="' + Y(gv) + '" stroke="#e5e7eb"/>' +
+          '<text x="' + (L - 4) + '" y="' + (Y(gv) + 3) + '" font-size="9" text-anchor="end" fill="#6b7280">' + gv.toFixed(2) + '</text>';
+      }
+      [t0, (t0 + t1) / 2, t1].forEach(function (at, i) {
+        var d = new Date(at), lab = ('0' + d.getDate()).slice(-2) + '/' + ('0' + (d.getMonth() + 1)).slice(-2) + (i === 2 ? '/' + String(d.getFullYear()).slice(2) : '');
+        svg += '<text x="' + X(at) + '" y="' + (H - 6) + '" font-size="9" text-anchor="' + (i === 0 ? 'start' : i === 2 ? 'end' : 'middle') + '" fill="#6b7280">' + lab + '</text>';
+      });
+      if (ins.works) {
+        var wx = X(Date.parse(ins.works.date + 'T12:00:00'));
+        if (wx >= L && wx <= W - R) svg += '<line x1="' + wx + '" x2="' + wx + '" y1="' + T + '" y2="' + (H - B) + '" stroke="#16a34a" stroke-dasharray="4 3"/>';
+      }
+      // rolling median of the comfort sensor over 14 nights
+      var path = '';
+      n.forEach(function (x, i) {
+        var w = n.slice(Math.max(0, i - 13), i + 1).map(function (y) { return y.comfort; }).filter(function (v) { return v != null; }).sort(function (a, b) { return a - b; });
+        if (!w.length) return;
+        var m = w.length % 2 ? w[(w.length - 1) / 2] : (w[w.length / 2 - 1] + w[w.length / 2]) / 2;
+        path += (path ? 'L' : 'M') + X(x.at).toFixed(1) + ' ' + Y(m).toFixed(1);
+      });
+      if (path) svg += '<path d="' + path + '" fill="none" stroke="' + COLORS.median + '" stroke-width="1.5"/>';
+      ['regulation', 'comfort'].forEach(function (k) {
+        n.forEach(function (x) { if (x[k] != null) svg += '<circle cx="' + X(x.at).toFixed(1) + '" cy="' + Y(x[k]).toFixed(1) + '" r="2.6" fill="' + COLORS[k] + '"><title>' + x.date + ' : ' + x[k] + ' °C/h</title></circle>'; });
+      });
+      svg += '</svg>';
+      el('insChart').innerHTML = svg + '<div class="legend"><span><i style="background:' + COLORS.comfort + '"></i>' + esc(t('settings.ins_comfort')) + '</span><span><i style="background:' + COLORS.regulation + '"></i>' + esc(t('settings.ins_regulation')) + '</span><span><i style="background:' + COLORS.median + ';border-radius:0;height:2px"></i>' + esc(t('settings.ins_median')) + '</span></div>';
+
+      var u = function (v) { return v == null ? '—' : v + ' ' + t('settings.ins_unit'); };
+      var html = '<tr><td></td><td class="v sm">' + esc(t('settings.ins_comfort')) + '</td><td class="v sm">' + esc(t('settings.ins_regulation')) + '</td></tr>';
+      html += '<tr><td>' + esc(t('settings.ins_recent')) + '</td><td class="v">' + u(ins.recent.comfort) + '</td><td class="v">' + u(ins.recent.regulation) + '</td></tr>';
+      if (ins.works) {
+        var w = ins.works;
+        html += '<tr><td>' + esc(t('settings.ins_before')) + ' <span class="sm">(' + w.before.nights + ' ' + esc(t('settings.ins_nights')) + ')</span></td><td class="v">' + u(w.before.comfort) + '</td><td class="v">' + u(w.before.regulation) + '</td></tr>';
+        html += '<tr><td>' + esc(t('settings.ins_after')) + ' <span class="sm">(' + w.after.nights + ' ' + esc(t('settings.ins_nights')) + ')</span></td><td class="v">' + u(w.after.comfort) + '</td><td class="v">' + u(w.after.regulation) + '</td></tr>';
+        var pc = function (g) { return g == null ? '—' : (g > 0 ? '−' : '+') + Math.abs(g) + ' %'; };
+        html += '<tr><td>' + esc(t('settings.ins_gain')) + '</td><td class="v ' + (w.gainComfort > 0 ? 'ok' : '') + '">' + pc(w.gainComfort) + '</td><td class="v ' + (w.gainRegulation > 0 ? 'ok' : '') + '">' + pc(w.gainRegulation) + '</td></tr>';
+      }
+      el('insTable').innerHTML = html;
+    }
+
     function showLearning(s) {
+      showInsulation(s);
       var th = s.thermal;
       if (!th) return;
       var cell = function (v) { return v.value + ' <span class="sm">(' + v.samples + ')</span>'; };
@@ -264,6 +329,14 @@
         });
       });
     });
+
+    el('saveWorks').addEventListener('click', function () {
+      Homey.set('insulation', { worksDate: el('worksDate').value || null }, function (err) {
+        el('msg2').textContent = err ? (err.message || String(err)) : t('settings.saved');
+        if (!err) showStatus();
+      });
+    });
+    Homey.get('insulation', function (err, v) { if (v && v.worksDate) el('worksDate').value = v.worksDate; });
 
     Homey.get('anticipation', function (err, a) {
       a = a || {};

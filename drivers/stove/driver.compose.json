@@ -22,7 +22,9 @@
     "measure_temperature.forecast_min",
     "stove_outdoor_source",
     "stove_heatup_minutes",
-    "stove_start_time"
+    "stove_start_time",
+    "stove_heat_loss",
+    "stove_heat_loss_median"
   ],
   "capabilitiesOptions": {
     "measure_temperature.flue_gas": {

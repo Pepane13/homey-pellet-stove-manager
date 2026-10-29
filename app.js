@@ -35,6 +35,10 @@ class PelletStoveApp extends Homey.App {
       timeZone: () => this.homey.clock.getTimezone(),
       log: this.log.bind(this),
     });
+    this.thermal.onNight = (night, summary) => {
+      this.log(`Night heat loss ${night.date}: comfort ${night.comfort}, thermostat ${night.regulation}`);
+      this.emit('heat_loss', { night, summary });
+    };
     this.targets = new TargetPlanner({
       store: this.homey.settings,
       timeZone: () => this.homey.clock.getTimezone(),
@@ -159,6 +163,7 @@ class PelletStoveApp extends Homey.App {
       thermal: this.thermal.summary(),
       plan: this.plan,
       targets: this.targets.list(),
+      insulation: this.thermal.lossSummary((this.homey.settings.get('insulation') || {}).worksDate || null),
       anticipation: this.anticipationConfig(),
       stoveStatus: this.stoveStatus,
       timeZone: this.homey.clock.getTimezone(),

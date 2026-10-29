@@ -1,0 +1,21 @@
+{
+  "type": "number",
+  "title": {
+    "en": "House heat loss (14-night median)",
+    "fr": "Pertes de la maison (médiane 14 nuits)"
+  },
+  "desc": {
+    "en": "Indoor temperature lost per hour with the stove off, for a 10 °C indoor/outdoor difference (comfort sensor). Lower is better.",
+    "fr": "Température intérieure perdue par heure poêle éteint, pour 10 °C d'écart intérieur/extérieur (sonde de confort). Plus c'est bas, mieux c'est."
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/thermo.svg",
+  "insights": true,
+  "units": {
+    "en": "°C/h",
+    "fr": "°C/h"
+  },
+  "decimals": 2
+}

@@ -59,6 +59,13 @@ reaches a target temperature at a target time. Targets come from the Flow action
 Flow switches the thermostat. A preview target in the settings is used when no Flow target is pending.
 The app itself controls nothing.
 
+## Insulation follow-up (0.3.2)
+
+Every accepted quiet night gives one heat-loss point per sensor, expressed as °C lost per hour for a
+10 °C indoor/outdoor difference. The stove device shows the last night and the 14-night median
+(both in Insights), and the settings page draws the curve and compares the medians before and after
+the date of insulation works. Resetting the learning keeps this curve.
+
 ## Roadmap
 
 1. Write commands (power 1–5, shutdown, alarm reset) after validation on hardware.

@@ -1,0 +1,21 @@
+{
+  "type": "number",
+  "title": {
+    "en": "House heat loss (night)",
+    "fr": "Pertes de la maison (nuit)"
+  },
+  "desc": {
+    "en": "Indoor temperature lost per hour with the stove off, for a 10 °C indoor/outdoor difference (comfort sensor). Lower is better.",
+    "fr": "Température intérieure perdue par heure poêle éteint, pour 10 °C d'écart intérieur/extérieur (sonde de confort). Plus c'est bas, mieux c'est."
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/thermo.svg",
+  "insights": true,
+  "units": {
+    "en": "°C/h",
+    "fr": "°C/h"
+  },
+  "decimals": 2
+}

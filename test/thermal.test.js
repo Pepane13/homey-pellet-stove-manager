@@ -105,3 +105,39 @@ test('persists the learning and can be reset', () => {
   again.reset();
   assert.strictEqual(again.param('comfort', 'k'), PRIORS.comfort.k);
 });
+
+test('keeps one loss point per night for the insulation curve and compares before/after works', () => {
+  const { l } = learner();
+  const nights = [];
+  l.onNight = (n) => nights.push(n);
+  const night = (day, k) => {
+    run(l, { from: Date.parse(`2026-11-${day}T21:00:00Z`), hours: 8, stove: 'off', k, start: 21, out: 8 });
+    l.observe({ t: Date.parse(`2026-11-${day}T05:01:00Z`) + 86400e3, comfort: 19, regulation: 19, outdoor: 8, stove: 'ignition' });
+    l.observe({ t: Date.parse(`2026-11-${day}T05:02:00Z`) + 86400e3, comfort: 19, regulation: 19, outdoor: 8, stove: 'cooling' });
+  };
+  night('01', 0.02);
+  night('03', 0.02);
+  night('10', 0.012);
+  night('12', 0.012);
+  assert.strictEqual(nights.length, 4);
+  assert.ok(Math.abs(nights[0].comfort - 0.2) < 0.02, `night loss ${nights[0].comfort}`);
+  const s = l.lossSummary('2026-11-05');
+  assert.strictEqual(s.works.before.nights, 2);
+  assert.strictEqual(s.works.after.nights, 2);
+  assert.ok(s.works.gainComfort >= 35 && s.works.gainComfort <= 45, `gain ${s.works.gainComfort} %`);
+  l.reset();
+  assert.strictEqual(l.lossSummary().nights.length, 4, 'reset keeps the curve');
+});
+
+test('rebuilds the loss curve from the 0.3.1 journal', () => {
+  const mem = { thermal_learning: { history: [
+    { at: Date.parse('2026-10-29T05:00:00Z'), type: 'cooling', sensor: 'comfort', value: 0.0137, accepted: true, outdoor: 11.7, hours: 7.3 },
+    { at: Date.parse('2026-10-29T05:00:00Z'), type: 'cooling', sensor: 'regulation', value: 0.0086, accepted: true, outdoor: 11.7, hours: 7.3 },
+  ] } };
+  const l = new ThermalLearner({ store: { get: (k) => mem[k], set: (k, v) => { mem[k] = v; } }, timeZone: () => TZ });
+  const n = l.lossSummary().nights;
+  assert.strictEqual(n.length, 1);
+  assert.strictEqual(n[0].date, '2026-10-28');
+  assert.strictEqual(n[0].comfort, 0.137);
+  assert.strictEqual(n[0].regulation, 0.086);
+});

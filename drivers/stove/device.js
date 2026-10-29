@@ -16,6 +16,8 @@ const LATER_CAPABILITIES = [
   'stove_outdoor_source',
   'stove_heatup_minutes',
   'stove_start_time',
+  'stove_heat_loss',
+  'stove_heat_loss_median',
 ];
 
 class StoveDevice extends Homey.Device {
@@ -44,6 +46,11 @@ class StoveDevice extends Homey.Device {
     this.homey.app.on('plan', this._onPlan);
     this._onStartDue = (e) => this.homey.flow.getDeviceTriggerCard('heat_start_due').trigger(this, e).catch(this.error);
     this.homey.app.on('heat_start_due', this._onStartDue);
+    this._onHeatLoss = (e) => this._applyHeatLoss(e).catch(this.error);
+    this.homey.app.on('heat_loss', this._onHeatLoss);
+    const loss = this.homey.app.thermal.lossSummary();
+    const last = loss.nights[loss.nights.length - 1];
+    this._applyHeatLoss({ night: last, summary: loss }).catch(this.error);
 
     this._connect();
     this._schedule(2000);
@@ -136,6 +143,11 @@ class StoveDevice extends Homey.Device {
     }
   }
 
+  async _applyHeatLoss({ night, summary }) {
+    if (night && night.comfort != null) await this._set('stove_heat_loss', night.comfort);
+    if (summary && summary.recent.comfort != null) await this._set('stove_heat_loss_median', summary.recent.comfort);
+  }
+
   async _applyPlan(plan) {
     if (!plan) {
       await this._set('stove_heatup_minutes', null, true);
@@ -206,6 +218,7 @@ class StoveDevice extends Homey.Device {
     }
     if (this._onPlan) this.homey.app.off('plan', this._onPlan);
     if (this._onStartDue) this.homey.app.off('heat_start_due', this._onStartDue);
+    if (this._onHeatLoss) this.homey.app.off('heat_loss', this._onHeatLoss);
     this.homey.clearTimeout(this.pollTimer);
     if (this.connection) this.connection.close();
   }

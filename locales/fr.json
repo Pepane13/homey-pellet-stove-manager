@@ -127,7 +127,21 @@
     "phase_unknown": "état du poêle inconnu",
     "st_targets": "Objectifs des Flows",
     "targets_none": "aucun",
-    "plan_from_settings": "(aperçu des réglages)"
+    "plan_from_settings": "(aperçu des réglages)",
+    "ins_title": "Isolation de la maison",
+    "ins_desc": "Une mesure par nuit calme poêle éteint : température perdue par heure pour 10 °C d'écart entre l'intérieur et l'extérieur. Plus la courbe est basse, mieux la maison garde la chaleur. Le vent et l'ouverture des portes font varier les nuits : comparez les médianes plutôt que des nuits isolées.",
+    "ins_date": "Date des travaux d'isolation",
+    "ins_save": "Enregistrer la date",
+    "ins_none": "Pas encore de nuit mesurée.",
+    "ins_comfort": "Séjour",
+    "ins_regulation": "Entrée (thermostat)",
+    "ins_median": "Médiane 14 nuits",
+    "ins_recent": "Médiane des 14 dernières nuits",
+    "ins_before": "Avant travaux",
+    "ins_after": "Après travaux",
+    "ins_gain": "Gain",
+    "ins_nights": "nuits",
+    "ins_unit": "°C/h"
   },
   "sensor_role": {
     "comfort": "Sonde de confort",

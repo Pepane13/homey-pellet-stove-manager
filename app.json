@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.pepane13.pelletstove",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -444,7 +444,9 @@
         "measure_temperature.forecast_min",
         "stove_outdoor_source",
         "stove_heatup_minutes",
-        "stove_start_time"
+        "stove_start_time",
+        "stove_heat_loss",
+        "stove_heat_loss_median"
       ],
       "capabilitiesOptions": {
         "measure_temperature.flue_gas": {
@@ -651,6 +653,48 @@
         "fr": "tr/min"
       },
       "decimals": 0
+    },
+    "stove_heat_loss": {
+      "type": "number",
+      "title": {
+        "en": "House heat loss (night)",
+        "fr": "Pertes de la maison (nuit)"
+      },
+      "desc": {
+        "en": "Indoor temperature lost per hour with the stove off, for a 10 °C indoor/outdoor difference (comfort sensor). Lower is better.",
+        "fr": "Température intérieure perdue par heure poêle éteint, pour 10 °C d'écart intérieur/extérieur (sonde de confort). Plus c'est bas, mieux c'est."
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/thermo.svg",
+      "insights": true,
+      "units": {
+        "en": "°C/h",
+        "fr": "°C/h"
+      },
+      "decimals": 2
+    },
+    "stove_heat_loss_median": {
+      "type": "number",
+      "title": {
+        "en": "House heat loss (14-night median)",
+        "fr": "Pertes de la maison (médiane 14 nuits)"
+      },
+      "desc": {
+        "en": "Indoor temperature lost per hour with the stove off, for a 10 °C indoor/outdoor difference (comfort sensor). Lower is better.",
+        "fr": "Température intérieure perdue par heure poêle éteint, pour 10 °C d'écart intérieur/extérieur (sonde de confort). Plus c'est bas, mieux c'est."
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/thermo.svg",
+      "insights": true,
+      "units": {
+        "en": "°C/h",
+        "fr": "°C/h"
+      },
+      "decimals": 2
     },
     "stove_heatup_minutes": {
       "type": "number",
