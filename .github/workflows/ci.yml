@@ -1,0 +1,33 @@
+name: Tests and validation
+on:
+  pull_request:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests, manifest and Homey validation
+    runs-on: ubuntu-latest
+    env:
+      APP_DIR: .
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: npm ci
+      - name: Tests
+        working-directory: ${{ env.APP_DIR }}
+        run: for t in test/*.test.js; do echo "== $t"; node --test "$t" || exit 1; done
+      - name: Homey validation (publish level)
+        working-directory: ${{ env.APP_DIR }}
+        run: npx --yes homey@4 app validate --level publish
+      - name: app.json is generated from .homeycompose
+        working-directory: ${{ env.APP_DIR }}
+        run: |
+          # homey app validate rebuilds app.json from .homeycompose: it must not change.
+          git diff --exit-code -- app.json || { echo "::error::app.json is out of date: run homey app validate and commit app.json"; exit 1; }

@@ -1,0 +1,79 @@
+name: Publish to the Homey App Store
+# Every push to main runs the tests and validation. When the version in package.json has no
+# vX.Y.Z tag yet, that version is published, then tagged by this workflow (so it is published once).
+# Requires the repository secret HOMEY_PAT (personal access token from https://tools.developer.homey.app/me).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: homey-publish
+  cancel-in-progress: false
+
+jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+
+  version:
+    name: New version?
+    needs: checks
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.v.outputs.version }}
+      release: ${{ steps.v.outputs.release }}
+    steps:
+      - uses: actions/checkout@v4
+      - id: v
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          if git ls-remote --exit-code --tags origin "refs/tags/v$VERSION" >/dev/null; then
+            echo "release=false" >> "$GITHUB_OUTPUT"
+            echo "v$VERSION is already published (tag exists): nothing to do." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "release=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    name: Publish v${{ needs.version.outputs.version }}
+    needs: version
+    if: needs.version.outputs.release == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      APP_DIR: .
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - name: Changelog present
+        run: node -e "const c=require('./$APP_DIR/.homeychangelog.json')[process.env.VERSION]; if(!c||!c.en||!c.fr){console.error('::error::Missing en/fr changelog for '+process.env.VERSION);process.exit(1)}"
+      - name: Token present
+        env:
+          HOMEY_PAT: ${{ secrets.HOMEY_PAT }}
+        run: |
+          [ -n "$HOMEY_PAT" ] || { echo "::error::Repository secret HOMEY_PAT is missing (Settings > Secrets and variables > Actions). Token: https://tools.developer.homey.app/me"; exit 1; }
+      - name: Dependencies
+        working-directory: ${{ env.APP_DIR }}
+        run: npm ci
+      - name: Publish v${{ env.VERSION }}
+        working-directory: ${{ env.APP_DIR }}
+        env:
+          HOMEY_HEADLESS: '1'
+          HOMEY_PAT: ${{ secrets.HOMEY_PAT }}
+        run: npx --yes homey@4 app publish
+      - name: Tag the published version
+        run: |
+          git tag "v$VERSION" "$GITHUB_SHA"
+          git push origin "v$VERSION"
+      - name: Summary
+        run: |
+          ID=$(node -p "require('./$APP_DIR/app.json').id")
+          echo "Published v${VERSION}. Submit it for certification or promote it at https://tools.developer.homey.app/apps/app/${ID}" >> "$GITHUB_STEP_SUMMARY"
