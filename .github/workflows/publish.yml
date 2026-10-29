@@ -26,7 +26,7 @@ jobs:
       version: ${{ steps.v.outputs.version }}
       release: ${{ steps.v.outputs.release }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - id: v
         run: |
           VERSION=$(node -p "require('./package.json').version")
@@ -49,8 +49,8 @@ jobs:
       APP_DIR: .
       VERSION: ${{ needs.version.outputs.version }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24
       - name: Changelog present
@@ -68,7 +68,7 @@ jobs:
         env:
           HOMEY_HEADLESS: '1'
           HOMEY_PAT: ${{ secrets.HOMEY_PAT }}
-        run: npx --yes homey@4 app publish
+        run: npx --yes homey@4.6.2 app publish
       - name: Tag the published version
         run: |
           git tag "v$VERSION" "$GITHUB_SHA"

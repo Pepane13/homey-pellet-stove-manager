@@ -1,0 +1,24 @@
+{
+  "name": {
+    "en": "Pellet stove",
+    "fr": "Poêle à granulés"
+  },
+  "height": 300,
+  "settings": [
+    {
+      "id": "show_month",
+      "type": "checkbox",
+      "title": {
+        "en": "Show the month consumption",
+        "fr": "Afficher la consommation du mois"
+      },
+      "value": true
+    }
+  ],
+  "api": {
+    "getData": {
+      "method": "GET",
+      "path": "/"
+    }
+  }
+}

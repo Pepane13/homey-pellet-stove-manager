@@ -307,6 +307,38 @@ class PelletStoveApp extends Homey.App {
     return c.summary(this.sensors.state ? this.sensors.state.outdoor : null);
   }
 
+  /** Main stove values for the dashboard widget. */
+  async getWidgetData() {
+    const stove = this.stove();
+    const cap = (id) => (stove && stove.hasCapability(id) ? stove.getCapabilityValue(id) : null);
+    const st = this.sensors.state || {};
+    const c = this.consumables.summary(st.outdoor ?? null);
+    const lang = this.homey.i18n.getLanguage() === 'fr' ? 'fr' : 'en';
+    const status = cap('stove_status');
+    return {
+      lang,
+      timeZone: this.homey.clock.getTimezone(),
+      available: !!stove && stove.getAvailable(),
+      status,
+      statusText: status ? this.homey.__(`status.${status}`) : null,
+      error: cap('alarm_generic') ? cap('stove_error') : null,
+      power: cap('stove_power_level'),
+      comfort: st.comfort ?? null,
+      regulation: st.regulation ?? null,
+      outdoor: st.outdoor ?? null,
+      startText: cap('stove_start_time'),
+      hold: this.regulator.hold(),
+      pellets: {
+        kgLeft: c.pellets.kgLeft, percent: c.pellets.percent, emptyAt: c.pellets.emptyAt, low: c.pellets.kgLeft <= c.config.lowKg,
+      },
+      month: {
+        kg: c.month.kg, cost: c.month.cost, bags: c.month.bags, forecast: c.month.forecast ? c.month.forecast.bags : null,
+      },
+      cleaning: { hours: c.cleaning.hours, threshold: c.cleaning.threshold, due: c.cleaning.due },
+      service: { nextDate: c.maintenance.nextDate, hoursLeft: c.maintenance.hoursLeft, due: c.maintenance.due },
+    };
+  }
+
   async listThermostats() {
     return this.devicesApi.listThermostats();
   }

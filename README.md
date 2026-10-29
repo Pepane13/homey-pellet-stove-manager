@@ -3,8 +3,10 @@
 Homey Pro app to monitor and manage pellet stoves driven by a **Duepi EVO** controller board
 (Interstoves, and other brands using the myDPRemote app), using the stove's **original WiFi module**.
 
-> **Status: 0.2 – read-only.** The app reads the stove and the room/outdoor temperature sensors; it does not send any command yet.
-> Write commands (power level, on/off, alarm reset) will be enabled once tested on real hardware.
+> **Status: 0.6.** The app reads the stove and the temperature sensors, learns the house, tracks pellets and
+> maintenance and can regulate through the Netatmo thermostat. Write commands to the stove (power, on/off,
+> alarm reset) exist but are **off by default**: enable « Allow commands to the stove » in the device settings
+> only after testing them on site, in front of the stove.
 
 ## Features (0.1)
 
@@ -66,6 +68,35 @@ Every accepted quiet night gives one heat-loss point per sensor, expressed as °
 (both in Insights), and the settings page draws the curve and compares the medians before and after
 the date of insulation works. Resetting the learning keeps this curve.
 
+## Pellets, cleaning and maintenance (0.4)
+
+Consumption is integrated from the power level (0.95 kg/h at P1 to 2.33 kg/h at P5, times a factor learnt
+only when the tank really runs empty, error 5). Flow cards: « Tank refilled » (full tank, 19 kg), bag price,
+« Cleaning done », « Professional maintenance done »; triggers for low pellets, evening refill advice,
+monthly bag forecast (1st of the month), cleaning soon/due, maintenance soon/due (12 months or 1,200 h)
+and the mid-season chimney sweeping reminder. The settings page shows the counters and the service journal.
+
+## Regulation and commands (0.5)
+
+- **Flows** (default): the app controls nothing.
+- **Netatmo compensated setpoint**: while a temperature is held (« Hold [21] °C in the living room »), the
+  thermostat setpoint is the target minus the smoothed living-room/thermostat gap (bounded, 0.5 °C steps,
+  at most every 10 minutes, written again if the thermostat went back to its schedule). « Stop holding »
+  puts the thermostat back on its schedule.
+- **Direct**: the app switches the stove itself with a hysteresis on the living room (−0.3/+0.2 °C) while the
+  thermostat is kept at a high manual setpoint; if the stove, the commands or the comfort sensor are not
+  available, the thermostat goes back to its schedule and « Regulation fell back » is triggered.
+- **Automatic power** (option): power = 1 + 2 × (target − living room), bounded, at most every 10 minutes.
+- The heating rate is also learnt per power level and used by the anticipation once seen three times.
+
+Commands (`F00n0` power n, `F0000` off, `D6000` alarm reset) are refused while « Allow commands to the
+stove » is off.
+
+## Dashboard widget (0.6)
+
+« Pellet stove » widget: status and power, living-room / thermostat / outdoor temperatures, pellets left
+with the estimated empty time, month consumption and cost with the bag forecast, cleaning and service counters.
+
 ## Release (no computer needed)
 
 1. Bump `version` in `package.json`, `.homeycompose/app.json` and `app.json`, and add the en + fr entry
@@ -79,11 +110,8 @@ the date of insulation works. Resetting the learning keeps this curve.
 
 ## Roadmap
 
-1. Write commands (power 1–5, shutdown, alarm reset) after validation on hardware.
-2. Pellet consumption model, refill advice, monthly bag forecast, cost tracking.
-3. Cleaning and professional maintenance tracking (12 months or 1,200 h, whichever comes first).
-4. Thermostat control from Flow targets, heating rate per power level, direct regulation mode with fallback.
-5. Dashboard widget.
+1. On-site test of the write commands, then direct mode and automatic power in daily use.
+2. Fully local connection to the original WiFi module (see Security notes).
 
 ## Protocol
 
@@ -104,6 +132,15 @@ The implementation in this repository is original.
   The app stores it only in the device store on your Homey and never logs it.
 - The vendor relay protocol sends the device code in clear text over the Internet (this is how myDPRemote works).
   The local bridge mode avoids this.
+- **Local mode with the original WiFi module.** The module only connects outbound to the vendor relay.
+  Redirecting `1.duepiwebserver1.com` to a local server (DNS override on the router) would make a fully local
+  mode possible, but it needs a capture of the exchange between the module and the relay (login, keep-alive,
+  who speaks first), which has not been done yet. Until then, the only local option is a serial bridge
+  (ESP-Link / ser2net) on the stove board.
+- `npm audit` reports 4 moderate alerts, all from `homey-api` → `socket.io-client@2` → `parseuri` (ReDoS when
+  parsing a hostile URL). The app only connects to its own Homey's local API, so the risk is negligible; no
+  `homey-api` version fixes it yet (3.21.2 has the same dependency).
+- CI uses exact versions: `homey@4.6.2`, and the GitHub actions pinned by commit.
 
 ## Development
 
