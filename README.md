@@ -66,6 +66,15 @@ Every accepted quiet night gives one heat-loss point per sensor, expressed as °
 (both in Insights), and the settings page draws the curve and compares the medians before and after
 the date of insulation works. Resetting the learning keeps this curve.
 
+## Release (no computer needed)
+
+1. GitHub → Actions → **Update Homey App Version**: choose patch/minor/major and write the changelog
+   (bumps the version, commits, tags and creates a GitHub release).
+2. GitHub → Actions → **Publish Homey App**: builds and uploads a Draft to the Homey developer tools
+   (needs the `HOMEY_PAT` repository secret, token from https://tools.developer.homey.app/me).
+3. In the developer tools, move the build to **Test**, then install or update it from
+   https://homey.app/a/com.pepane13.pelletstove/test/.
+
 ## Roadmap
 
 1. Write commands (power 1–5, shutdown, alarm reset) after validation on hardware.

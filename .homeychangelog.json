@@ -1,0 +1,9 @@
+{
+  "0.1.0": { "en": "First version: Duepi EVO connection through the myDPRemote server, status, alarms, temperatures and hour counters.", "fr": "Première version : connexion Duepi EVO par le serveur myDPRemote, état, alarmes, températures et compteurs d'heures." },
+  "0.1.1": { "en": "Single-screen pairing.", "fr": "Appairage en un seul écran." },
+  "0.2.0": { "en": "Temperature sensors chosen among all Homey devices, with checks and outdoor backup sensor.", "fr": "Sondes de température choisies parmi tous les appareils Homey, avec contrôles et sonde extérieure de secours." },
+  "0.2.1": { "en": "Météo-France AROME forecast and forecast accuracy tracking.", "fr": "Prévision Météo-France AROME et suivi de la précision des prévisions." },
+  "0.3.0": { "en": "House learning (losses, heating rate, lag) and start time computation.", "fr": "Apprentissage de la maison (pertes, vitesse de chauffe, délai) et calcul de l'heure d'allumage." },
+  "0.3.1": { "en": "Flow cards: reach a temperature at a time, time to start heating.", "fr": "Cartes de Flow : atteindre une température à une heure, il est temps d'allumer." },
+  "0.3.2": { "en": "Nightly heat-loss curve to follow insulation works.", "fr": "Courbe des pertes nuit après nuit pour suivre les travaux d'isolation." }
+}
