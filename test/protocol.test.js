@@ -44,3 +44,15 @@ test('write commands', () => {
   assert.strictEqual(WRITE.resetAlarm(), 'D6000');
   assert.ok(isAck('00000020'));
 });
+
+test('client write sends the command frames', async () => {
+  const { DuepiClient } = require('../lib/duepi/client');
+  const sent = [];
+  const c = new DuepiClient({ request: async (cmd) => { sent.push(cmd); return '00000020'; } });
+  await c.write('power', 3);
+  await c.write('power', 0);
+  await c.write('resetAlarm');
+  assert.deepStrictEqual(sent, ['F0030', 'F0000', 'D6000']);
+  await assert.rejects(c.write('power', 7));
+  await assert.rejects(c.write('format'));
+});

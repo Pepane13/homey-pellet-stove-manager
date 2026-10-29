@@ -170,7 +170,31 @@
     "co_cleaningHours": "Nettoyage toutes les (h de combustion)",
     "co_serviceMonths": "Entretien tous les (mois)",
     "co_serviceHours": "Entretien toutes les (h, compteur du poêle)",
-    "co_midSeasonSweep": "Rappel de ramonage mi-janvier"
+    "co_midSeasonSweep": "Rappel de ramonage mi-janvier",
+    "reg_title": "Régulation",
+    "reg_desc": "Flows : l'app ne pilote rien, vos Flows commutent le thermostat. Netatmo : pendant un maintien (carte « Maintenir [21] °C au séjour »), l'app règle le thermostat pour que ce soit le séjour, et non l'entrée, qui atteigne la consigne (moins de cycles courts). Direct : l'app allume et éteint elle-même le poêle avec une hystérésis sur le séjour ; nécessite « Autoriser les commandes vers le poêle » dans les réglages de l'appareil, sinon le thermostat revient à son planning.",
+    "reg_mode": "Mode",
+    "reg_flows": "Flows (aucun pilotage)",
+    "reg_netatmo": "Consigne Netatmo compensée",
+    "reg_direct": "Pilotage direct du poêle",
+    "reg_thermostat": "Thermostat",
+    "reg_offset": "Correction maximale (°C)",
+    "reg_auto": "Puissance automatique (commandes requises)",
+    "reg_max_power": "Puissance maximale",
+    "reg_hold": "Maintenir",
+    "reg_stop": "Arrêter le maintien",
+    "reg_save": "Enregistrer la régulation",
+    "reg_need_thermostat": "Choisissez le thermostat.",
+    "reg_st_hold": "Température maintenue",
+    "reg_none": "aucune",
+    "reg_st_gap": "Écart séjour – thermostat (lissé)",
+    "reg_st_setpoint": "Dernière consigne thermostat",
+    "reg_st_fallback": "Repli sur le planning",
+    "yes": "oui",
+    "reg_st_commands": "Commandes vers le poêle",
+    "reg_enabled": "activées",
+    "reg_disabled": "désactivées (réglages de l'appareil)",
+    "reg_st_gain": "Vitesse de chauffe apprise"
   },
   "sensor_role": {
     "comfort": "Sonde de confort",
@@ -199,5 +223,8 @@
     "not_needed": "Pas besoin d'allumer pour __target__ °C",
     "start_at": "Allumer à __time__ pour __target__ °C",
     "unreachable": "Allumer maintenant : __expected__ °C au lieu de __target__ °C"
+  },
+  "commands": {
+    "disabled": "Les commandes vers le poêle sont désactivées (réglages de l'appareil)."
   }
 }

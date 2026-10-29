@@ -34,5 +34,9 @@
   "0.4.0": {
     "en": "Pellets (tank level, learnt consumption, evening refill advice, monthly bag forecast, cost), cleaning counter and professional maintenance follow-up with log.",
     "fr": "Pellets (niveau du réservoir, consommation apprise, conseil de recharge du soir, prévision mensuelle en sacs, coût), compteur de nettoyage et suivi de l'entretien professionnel avec journal."
+  },
+  "0.5.0": {
+    "en": "Regulation: hold a living-room temperature with a compensated Netatmo setpoint (fewer short cycles) or direct stove control with fallback to the thermostat schedule. Stove commands (power 1–5, on, off, alarm reset), disabled by default until enabled in the device settings. Automatic power and heating rate learnt per power level.",
+    "fr": "Régulation : maintien d'une température au séjour par consigne Netatmo compensée (moins de cycles courts) ou pilotage direct du poêle avec repli sur le planning du thermostat. Commandes du poêle (puissance 1–5, allumage, arrêt, acquittement d'alarme), désactivées par défaut jusqu'à activation dans les réglages de l'appareil. Puissance automatique et vitesse de chauffe apprise par puissance."
   }
 }

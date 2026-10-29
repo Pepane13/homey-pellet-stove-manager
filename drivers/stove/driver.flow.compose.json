@@ -462,6 +462,31 @@
         "en": "Mid-season chimney sweeping reminder",
         "fr": "Rappel de ramonage de mi-saison"
       }
+    },
+    {
+      "id": "regulation_fallback",
+      "title": {
+        "en": "Regulation fell back to the thermostat schedule",
+        "fr": "La régulation est revenue au planning du thermostat"
+      },
+      "hint": {
+        "en": "Direct mode only: the stove or the comfort sensor could not be used, the thermostat was put back on its schedule.",
+        "fr": "Mode direct uniquement : le poêle ou la sonde de confort n'étaient plus utilisables, le thermostat a été remis sur son planning."
+      },
+      "tokens": [
+        {
+          "name": "reason",
+          "type": "string",
+          "title": {
+            "en": "Reason",
+            "fr": "Raison"
+          },
+          "example": {
+            "en": "stove unreachable",
+            "fr": "poêle injoignable"
+          }
+        }
+      ]
     }
   ],
   "conditions": [
@@ -522,6 +547,13 @@
       "title": {
         "en": "Professional maintenance !{{is|is not}} due",
         "fr": "L'entretien professionnel !{{est|n'est pas}} dû"
+      }
+    },
+    {
+      "id": "comfort_hold_active",
+      "title": {
+        "en": "A comfort temperature !{{is|is not}} held",
+        "fr": "Une température de confort !{{est|n'est pas}} maintenue"
       }
     }
   ],
@@ -624,6 +656,136 @@
           }
         }
       ]
+    },
+    {
+      "id": "hold_comfort",
+      "title": {
+        "en": "Hold a temperature in the living room",
+        "fr": "Maintenir une température au séjour"
+      },
+      "titleFormatted": {
+        "en": "Hold [[temperature]] °C in the living room",
+        "fr": "Maintenir [[temperature]] °C au séjour"
+      },
+      "hint": {
+        "en": "Used by the « netatmo » and « direct » regulation modes (app settings). In « Flows » mode it is only remembered.",
+        "fr": "Utilisée par les modes de régulation « netatmo » et « direct » (réglages de l'app). En mode « Flows », elle est seulement mémorisée."
+      },
+      "args": [
+        {
+          "type": "number",
+          "name": "temperature",
+          "min": 5,
+          "max": 28,
+          "step": 0.5,
+          "placeholder": {
+            "en": "21",
+            "fr": "21"
+          }
+        }
+      ]
+    },
+    {
+      "id": "stop_hold",
+      "title": {
+        "en": "Stop holding the temperature",
+        "fr": "Arrêter le maintien de température"
+      },
+      "hint": {
+        "en": "The thermostat is put back on its schedule.",
+        "fr": "Le thermostat est remis sur son planning."
+      }
+    },
+    {
+      "id": "set_power_level",
+      "title": {
+        "en": "Set the stove power",
+        "fr": "Régler la puissance du poêle"
+      },
+      "titleFormatted": {
+        "en": "Set the stove to [[level]]",
+        "fr": "Régler le poêle sur [[level]]"
+      },
+      "hint": {
+        "en": "Needs « Allow commands to the stove » in the device settings.",
+        "fr": "Nécessite « Autoriser les commandes vers le poêle » dans les réglages de l'appareil."
+      },
+      "args": [
+        {
+          "type": "dropdown",
+          "name": "level",
+          "values": [
+            {
+              "id": "1",
+              "label": {
+                "en": "Power 1",
+                "fr": "Puissance 1"
+              }
+            },
+            {
+              "id": "2",
+              "label": {
+                "en": "Power 2",
+                "fr": "Puissance 2"
+              }
+            },
+            {
+              "id": "3",
+              "label": {
+                "en": "Power 3",
+                "fr": "Puissance 3"
+              }
+            },
+            {
+              "id": "4",
+              "label": {
+                "en": "Power 4",
+                "fr": "Puissance 4"
+              }
+            },
+            {
+              "id": "5",
+              "label": {
+                "en": "Power 5",
+                "fr": "Puissance 5"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "stove_turn_on",
+      "title": {
+        "en": "Switch the stove on",
+        "fr": "Allumer le poêle"
+      },
+      "hint": {
+        "en": "At the last power level. Needs « Allow commands to the stove ».",
+        "fr": "À la dernière puissance utilisée. Nécessite « Autoriser les commandes vers le poêle »."
+      }
+    },
+    {
+      "id": "stove_turn_off",
+      "title": {
+        "en": "Switch the stove off",
+        "fr": "Éteindre le poêle"
+      },
+      "hint": {
+        "en": "Needs « Allow commands to the stove ».",
+        "fr": "Nécessite « Autoriser les commandes vers le poêle »."
+      }
+    },
+    {
+      "id": "reset_alarm",
+      "title": {
+        "en": "Reset the stove alarm",
+        "fr": "Acquitter l'alarme du poêle"
+      },
+      "hint": {
+        "en": "Clear the cause first (empty tank, ashes). Needs « Allow commands to the stove ».",
+        "fr": "Supprimez d'abord la cause (réservoir vide, cendres). Nécessite « Autoriser les commandes vers le poêle »."
+      }
     }
   ]
 }

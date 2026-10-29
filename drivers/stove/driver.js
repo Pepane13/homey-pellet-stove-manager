@@ -41,6 +41,21 @@ class StoveDriver extends Homey.Driver {
       .registerRunListener(async () => { cons().cleaned(); after(); });
     this.homey.flow.getActionCard('maintenance_done')
       .registerRunListener(async ({ note }) => { cons().serviced({ note: note || '' }); after(); });
+    const app = () => this.homey.app;
+    this.homey.flow.getConditionCard('comfort_hold_active')
+      .registerRunListener(async () => !!app().regulator.hold());
+    this.homey.flow.getActionCard('hold_comfort')
+      .registerRunListener(async ({ temperature }) => app().setHold(temperature));
+    this.homey.flow.getActionCard('stop_hold')
+      .registerRunListener(async () => app().clearHold());
+    this.homey.flow.getActionCard('set_power_level')
+      .registerRunListener(async ({ device, level }) => device.setPowerLevel(Number(level)));
+    this.homey.flow.getActionCard('stove_turn_on')
+      .registerRunListener(async ({ device }) => device.turnOn());
+    this.homey.flow.getActionCard('stove_turn_off')
+      .registerRunListener(async ({ device }) => device.turnOff());
+    this.homey.flow.getActionCard('reset_alarm')
+      .registerRunListener(async ({ device }) => device.resetAlarm());
     this.log('Pellet stove driver initialised');
   }
 

@@ -10,6 +10,12 @@ module.exports = {
   async consumablesAction({ homey, body }) {
     return homey.app.consumablesAction(body || {});
   },
+  async getThermostats({ homey }) {
+    return homey.app.listThermostats();
+  },
+  async regulationAction({ homey, body }) {
+    return homey.app.regulationAction(body || {});
+  },
   async resetLearning({ homey }) {
     return homey.app.resetLearning();
   },

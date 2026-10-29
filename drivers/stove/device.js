@@ -64,8 +64,11 @@ class StoveDevice extends Homey.Device {
     this._onConsumableEvent = (e) => this.homey.flow.getDeviceTriggerCard(e.type).trigger(this, e.tokens).catch(this.error);
     this.homey.app.on('consumables', this._onConsumables);
     this.homey.app.on('consumable_event', this._onConsumableEvent);
+    this._onFallback = (e) => this.homey.flow.getDeviceTriggerCard('regulation_fallback').trigger(this, e).catch(this.error);
+    this.homey.app.on('regulation_fallback', this._onFallback);
     this._applyConsumables(this.homey.app.consumables.summary()).catch(this.error);
 
+    this.homey.app.registerStove(this);
     this._connect();
     this._schedule(2000);
     this.log(`Stove device ready (${this.getSetting('mode')})`);
@@ -110,6 +113,45 @@ class StoveDevice extends Homey.Device {
     } finally {
       this._schedule();
     }
+  }
+
+  /** Write commands are disabled until the owner enables them in the device settings (after an on-site test). */
+  commandsEnabled() {
+    return this.getSetting('commands_enabled') === true;
+  }
+
+  async _command(name, value) {
+    if (!this.commandsEnabled()) throw new Error(this.homey.__('commands.disabled'));
+    if (!this.getAvailable()) throw new Error(this.homey.__('device.unreachable'));
+    this.log(`Command ${name}${value == null ? '' : ` ${value}`}`);
+    const reply = await this.client.write(name, value);
+    this._schedule(3000); // read the new state soon
+    return reply;
+  }
+
+  async setPowerLevel(level) {
+    const n = Number(level);
+    if (!Number.isInteger(n) || n < 1 || n > 5) throw new Error(`Invalid power level ${level}`);
+    return this._command('power', n);
+  }
+
+  /** Switch on at the last used power level (or the configured default). */
+  async turnOn(level) {
+    const last = this.getCapabilityValue('stove_power_level');
+    const n = Number(level) || (last >= 1 && last <= 5 ? last : Number(this.getSetting('default_power')) || 3);
+    return this.setPowerLevel(n);
+  }
+
+  async turnOff() {
+    return this._command('power', 0);
+  }
+
+  async resetAlarm() {
+    return this._command('resetAlarm');
+  }
+
+  isHeating() {
+    return ['ignition', 'heating', 'eco'].includes(this.getCapabilityValue('stove_status'));
   }
 
   async _apply(s) {
@@ -226,7 +268,10 @@ class StoveDevice extends Homey.Device {
     await this.setCapabilityValue(capability, value).catch(this.error);
   }
 
-  async onSettings({ changedKeys }) {
+  async onSettings({ newSettings, changedKeys }) {
+    if (changedKeys.includes('commands_enabled')) {
+      this.log(`Write commands ${newSettings.commands_enabled ? 'enabled' : 'disabled'}`);
+    }
     if (changedKeys.some((k) => ['mode', 'host', 'port'].includes(k))) {
       this.homey.setTimeout(() => {
         this._connect();
@@ -247,6 +292,7 @@ class StoveDevice extends Homey.Device {
 
   _stop() {
     this.stopped = true;
+    this.homey.app.unregisterStove(this);
     const { sensors } = this.homey.app;
     if (sensors && this._onSensors) {
       sensors.off('update', this._onSensors);
@@ -258,6 +304,7 @@ class StoveDevice extends Homey.Device {
     if (this._onHeatLoss) this.homey.app.off('heat_loss', this._onHeatLoss);
     if (this._onConsumables) this.homey.app.off('consumables', this._onConsumables);
     if (this._onConsumableEvent) this.homey.app.off('consumable_event', this._onConsumableEvent);
+    if (this._onFallback) this.homey.app.off('regulation_fallback', this._onFallback);
     this.homey.clearTimeout(this.pollTimer);
     if (this.connection) this.connection.close();
   }

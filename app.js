@@ -7,6 +7,7 @@ const { MeteoFranceForecast, valueAt } = require('./lib/forecast');
 const { ThermalLearner, nextOccurrence } = require('./lib/thermal');
 const { TargetPlanner } = require('./lib/targets');
 const { Consumables } = require('./lib/consumables');
+const { Regulator } = require('./lib/regulation');
 
 const ANTICIPATION_DEFAULTS = Object.freeze({ target: 21, time: '06:20', sensor: 'comfort' });
 
@@ -49,7 +50,10 @@ class PelletStoveApp extends Homey.App {
       timeZone: () => this.homey.clock.getTimezone(),
       log: this.log.bind(this),
     });
+    this.regulator = new Regulator({ store: this.homey.settings, log: this.log.bind(this) });
+    this.stoves = new Set();
     this.stoveStatus = null;
+    this.stovePower = null;
     this.plan = null;
     this.sensors.on('update', (state) => this._onSensorState(state));
     this.sensors.on('sensor_unavailable', (e) => this.log(`Sensor ${e.role} unavailable (${e.reason})`));
@@ -57,6 +61,7 @@ class PelletStoveApp extends Homey.App {
     this.homey.settings.on('set', (key) => {
       if (key === 'sensors' || key === 'anticipation') this.refreshSensors();
       if (key === 'consumables_settings') this.publishConsumables();
+      if (key === 'regulation') this._regulate(this.sensors.state).catch((e) => this.error(e.message));
     });
     this.sensorTimer = this.homey.setInterval(() => this.refreshSensors(), SENSOR_INTERVAL);
     this.homey.setTimeout(() => this.refreshSensors(), 5000);
@@ -78,6 +83,7 @@ class PelletStoveApp extends Homey.App {
 
   /** Stove snapshot from the device: pellets, cleaning and maintenance counters. */
   observeStove(state) {
+    this.stovePower = state.powerLevel ?? null;
     try {
       this.consumables.observe({
         t: state.at || Date.now(),
@@ -101,6 +107,81 @@ class PelletStoveApp extends Homey.App {
       this.emit('consumable_event', e);
     }
     this.emit('consumables', this.consumables.summary(outdoor));
+  }
+
+  registerStove(device) {
+    this.stoves.add(device);
+  }
+
+  unregisterStove(device) {
+    this.stoves.delete(device);
+  }
+
+  /** The (single) stove device used by the regulation. */
+  stove() {
+    return this.stoves.values().next().value || null;
+  }
+
+  async setHold(target) {
+    this.regulator.setHold(target);
+    this.log(`Hold ${target} °C in the comfort room`);
+    await this._regulate(this.sensors.state);
+  }
+
+  async clearHold() {
+    const cfg = this.regulator.config();
+    const held = this.regulator.hold();
+    this.regulator.clearHold();
+    this.log('Hold stopped');
+    if (held && cfg.mode !== 'flows' && cfg.thermostatId) await this._backToSchedule(cfg, 'hold stopped');
+  }
+
+  async _backToSchedule(cfg, reason) {
+    try {
+      await this.devicesApi.runDeviceAction(cfg.thermostatId, 'thermostat_set_mode', { mode: 'schedule' });
+      this.log(`Thermostat back to its schedule (${reason})`);
+    } catch (err) {
+      this.error('Thermostat schedule failed:', err.message);
+    }
+  }
+
+  /** One regulation step: compensated setpoint (netatmo), stove switching (direct), automatic power. */
+  async _regulate(state) {
+    if (!state) return;
+    const stove = this.stove();
+    const cfg = this.regulator.config();
+    let thermostatTarget = null;
+    if (cfg.mode !== 'flows' && cfg.thermostatId && this.regulator.hold()) {
+      try {
+        const th = await this.devicesApi.readDevice(cfg.thermostatId);
+        const v = th.capabilitiesObj && th.capabilitiesObj.target_temperature && th.capabilitiesObj.target_temperature.value;
+        if (typeof v === 'number') thermostatTarget = v;
+      } catch (err) {
+        this.error('Thermostat read failed:', err.message);
+      }
+    }
+    const actions = this.regulator.step({
+      comfort: state.comfort,
+      regulation: state.regulation,
+      thermostatTarget,
+      stoveReachable: !!stove && stove.getAvailable() && this.stoveStatus != null,
+      commandsEnabled: !!stove && stove.commandsEnabled(),
+      stoveHeating: !!stove && stove.isHeating(),
+      power: this.stovePower,
+    });
+    for (const a of actions) {
+      this.log(`Regulation: ${a.type} ${a.value ?? a.on ?? a.level ?? ''} (${a.reason || ''})`);
+      try {
+        if (a.type === 'setpoint') await this.devicesApi.setCapability(cfg.thermostatId, 'target_temperature', a.value);
+        else if (a.type === 'schedule') {
+          await this._backToSchedule(cfg, a.reason);
+          this.emit('regulation_fallback', { reason: a.reason });
+        } else if (a.type === 'stove') await (a.on ? stove.turnOn() : stove.turnOff());
+        else if (a.type === 'power') await stove.setPowerLevel(a.level);
+      } catch (err) {
+        this.error(`Regulation ${a.type} failed:`, err.message);
+      }
+    }
   }
 
   /** Called by the stove device on each poll (null when the stove is unreachable). */
@@ -145,6 +226,7 @@ class PelletStoveApp extends Homey.App {
         regulation: state.regulation,
         outdoor: state.outdoor,
         stove: this.stoveStatus,
+        power: this.stovePower,
       });
       const cfg = this.anticipationConfig();
       const tz = this.homey.clock.getTimezone();
@@ -152,7 +234,9 @@ class PelletStoveApp extends Homey.App {
       const current = cfg.sensor === 'regulation' ? state.regulation : state.comfort;
       const heating = ['ignition', 'heating', 'eco'].includes(this.stoveStatus);
       const planFor = (target, at) => (outdoorAt && at && current != null
-        ? this.thermal.plan({ sensor: cfg.sensor, target: Number(target), at, current, outdoorAt, heating })
+        ? this.thermal.plan({
+          sensor: cfg.sensor, target: Number(target), at, current, outdoorAt, heating, power: heating ? this.stovePower : null,
+        })
         : null);
 
       // Targets set by Flows: raise « time to start » when due
@@ -177,6 +261,7 @@ class PelletStoveApp extends Homey.App {
     } catch (err) {
       this.error('Anticipation failed:', err.message);
     }
+    this._regulate(state).catch((err) => this.error('Regulation failed:', err.message));
   }
 
   /* ---- Settings page API ---- */
@@ -204,6 +289,11 @@ class PelletStoveApp extends Homey.App {
       stoveStatus: this.stoveStatus,
       timeZone: this.homey.clock.getTimezone(),
       consumables: this.consumables.summary(state.outdoor),
+      regulation: this.regulator.summary(),
+      stove: (() => {
+        const st = this.stove();
+        return st ? { commandsEnabled: st.commandsEnabled(), power: this.stovePower } : null;
+      })(),
     };
   }
 
@@ -215,6 +305,17 @@ class PelletStoveApp extends Homey.App {
     else throw new Error('Unknown action');
     this.publishConsumables();
     return c.summary(this.sensors.state ? this.sensors.state.outdoor : null);
+  }
+
+  async listThermostats() {
+    return this.devicesApi.listThermostats();
+  }
+
+  async regulationAction(body) {
+    if (body.action === 'hold') await this.setHold(body.target);
+    else if (body.action === 'stop') await this.clearHold();
+    else throw new Error('Unknown action');
+    return this.regulator.summary();
   }
 
   async resetLearning() {

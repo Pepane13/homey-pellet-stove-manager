@@ -56,6 +56,30 @@
     <button id="saveAntic" class="secondary" data-i18n="settings.antic_save"></button>
   </div>
 
+  <h2 data-i18n="settings.reg_title"></h2>
+  <div class="role">
+    <div class="desc" data-i18n="settings.reg_desc"></div>
+    <div class="row"><label for="regMode" style="flex:1" data-i18n="settings.reg_mode"></label>
+      <select id="regMode" style="width:200px">
+        <option value="flows" data-i18n="settings.reg_flows"></option>
+        <option value="netatmo" data-i18n="settings.reg_netatmo"></option>
+        <option value="direct" data-i18n="settings.reg_direct"></option>
+      </select></div>
+    <div class="row"><label for="regThermostat" style="flex:1" data-i18n="settings.reg_thermostat"></label>
+      <select id="regThermostat" style="width:200px"></select></div>
+    <div class="row"><label for="regOffset" style="flex:1" data-i18n="settings.reg_offset"></label><input type="number" id="regOffset" min="0" max="3" step="0.5"></div>
+    <div class="row"><label for="regAuto" style="flex:1" data-i18n="settings.reg_auto"></label><input type="checkbox" id="regAuto"></div>
+    <div class="row"><label for="regMaxPower" style="flex:1" data-i18n="settings.reg_max_power"></label><input type="number" id="regMaxPower" min="1" max="5" step="1"></div>
+    <table id="regStatus" style="margin-top:8px"></table>
+    <div class="row" style="gap:6px">
+      <input type="number" id="regTarget" min="5" max="28" step="0.5" value="21">
+      <button id="regHold" class="secondary" style="flex:1;margin-top:0" data-i18n="settings.reg_hold"></button>
+      <button id="regStop" class="secondary" style="flex:1;margin-top:0" data-i18n="settings.reg_stop"></button>
+    </div>
+    <button id="regSave" class="secondary" data-i18n="settings.reg_save"></button>
+    <div id="msg4" style="margin-top:8px;font-size:13px;min-height:18px"></div>
+  </div>
+
   <h2 data-i18n="settings.advanced"></h2>
   <div class="role">
     <label class="title" for="stale" data-i18n="settings.stale"></label>
@@ -321,6 +345,30 @@
       }
     }
 
+    function showRegulation(s) {
+      var r = s.regulation;
+      if (!r) return;
+      var row = function (label, value, cls) { return '<tr><td>' + esc(label) + '</td><td class="v ' + (cls || '') + '">' + esc(value) + '</td></tr>'; };
+      var html = '';
+      html += row(t('settings.reg_st_hold'), r.hold ? r.hold.target + ' °C' : t('settings.reg_none'));
+      html += row(t('settings.reg_st_gap'), r.gap == null ? '—' : (r.gap > 0 ? '+' : '') + r.gap + ' °C');
+      if (r.config.mode !== 'flows') html += row(t('settings.reg_st_setpoint'), r.lastSetpoint == null ? '—' : r.lastSetpoint + ' °C');
+      if (r.fallback) html += row(t('settings.reg_st_fallback'), t('settings.yes'), 'ko');
+      html += row(t('settings.reg_st_commands'), s.stove ? t(s.stove.commandsEnabled ? 'settings.reg_enabled' : 'settings.reg_disabled') : '—', s.stove && s.stove.commandsEnabled ? 'ok' : '');
+      var bp = s.thermal && s.thermal.byPower && s.thermal.byPower[(s.anticipation || {}).sensor || 'comfort'];
+      if (bp) Object.keys(bp).sort().forEach(function (lvl) {
+        html += row(t('settings.reg_st_gain') + ' P' + lvl, bp[lvl].value.toFixed(2) + ' °C/h (' + bp[lvl].samples + ')');
+      });
+      el('regStatus').innerHTML = html;
+    }
+
+    function regAction(body) {
+      Homey.api('POST', '/regulation', body, function (err) {
+        el('msg4').textContent = err ? (err.message || String(err)) : t('settings.saved');
+        if (!err) setTimeout(showStatus, 800);
+      });
+    }
+
     function coAction(body) {
       Homey.api('POST', '/consumables', body, function (err) {
         el('msg3').textContent = err ? (err.message || String(err)) : t('settings.saved');
@@ -362,6 +410,7 @@
         html += row(t('settings.st_plan'), planText(s) + (s.plan && s.plan.source === 'settings' ? ' ' + t('settings.plan_from_settings') : ''), s.plan ? s.plan.reachable : undefined);
         el('status').innerHTML = html;
         showConsumables(s);
+        showRegulation(s);
         showLearning(s);
       });
     }
@@ -396,6 +445,40 @@
         });
       });
     });
+
+    Homey.get('regulation', function (err, r) {
+      r = r || {};
+      el('regMode').value = r.mode || 'flows';
+      el('regOffset').value = r.maxOffset != null ? r.maxOffset : 1.5;
+      el('regAuto').checked = !!r.autoPower;
+      el('regMaxPower').value = r.maxPower || 5;
+      Homey.api('GET', '/thermostats', null, function (e2, list) {
+        var opts = '<option value="">—</option>' + (list || []).map(function (d) {
+          return '<option value="' + esc(d.id) + '">' + esc(d.name) + (d.target != null ? ' (' + esc(d.target) + ' °C)' : '') + '</option>';
+        }).join('');
+        el('regThermostat').innerHTML = opts;
+        el('regThermostat').value = r.thermostatId || '';
+      });
+    });
+    el('regSave').addEventListener('click', function () {
+      var mode = el('regMode').value;
+      var th = el('regThermostat').value || null;
+      if (mode !== 'flows' && !th) { el('msg4').textContent = t('settings.reg_need_thermostat'); return; }
+      Homey.get('regulation', function (e, cur) {
+        var out = Object.assign({}, cur || {}, {
+          mode: mode, thermostatId: th,
+          maxOffset: Math.min(3, Math.max(0, Number(el('regOffset').value) || 0)),
+          autoPower: el('regAuto').checked,
+          maxPower: Math.min(5, Math.max(1, Math.round(Number(el('regMaxPower').value) || 5)))
+        });
+        Homey.set('regulation', out, function (err) {
+          el('msg4').textContent = err ? (err.message || String(err)) : t('settings.saved');
+          if (!err) setTimeout(showStatus, 1500);
+        });
+      });
+    });
+    el('regHold').addEventListener('click', function () { regAction({ action: 'hold', target: Number(el('regTarget').value) }); });
+    el('regStop').addEventListener('click', function () { regAction({ action: 'stop' }); });
 
     el('svcNote').placeholder = t('settings.co_svc_note');
     el('coRefill').addEventListener('click', function () { coAction({ action: 'refilled' }); });

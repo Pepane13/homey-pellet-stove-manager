@@ -176,6 +176,43 @@
           }
         }
       ]
+    },
+    {
+      "type": "group",
+      "label": {
+        "en": "Commands",
+        "fr": "Commandes"
+      },
+      "children": [
+        {
+          "id": "commands_enabled",
+          "type": "checkbox",
+          "value": false,
+          "label": {
+            "en": "Allow commands to the stove",
+            "fr": "Autoriser les commandes vers le poêle"
+          },
+          "hint": {
+            "en": "Off by default: the app only reads the stove. Enable it only after testing switch-on, switch-off and power changes on site, in front of the stove. Used by the « Set power », « Switch on/off », « Reset alarm » Flow cards and by the direct regulation mode.",
+            "fr": "Désactivé par défaut : l'app ne fait que lire le poêle. À activer seulement après avoir testé sur place, devant le poêle, l'allumage, l'arrêt et le changement de puissance. Utilisé par les cartes « Régler la puissance », « Allumer/Éteindre », « Acquitter l'alarme » et par le mode de régulation direct."
+          }
+        },
+        {
+          "id": "default_power",
+          "type": "number",
+          "value": 3,
+          "min": 1,
+          "max": 5,
+          "label": {
+            "en": "Power when switching on",
+            "fr": "Puissance à l'allumage"
+          },
+          "hint": {
+            "en": "Used when the last power level is unknown.",
+            "fr": "Utilisée si la dernière puissance n'est pas connue."
+          }
+        }
+      ]
     }
   ]
 }

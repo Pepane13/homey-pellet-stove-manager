@@ -14,14 +14,14 @@ function learner(now = () => Date.parse('2026-10-29T06:00:00Z')) {
 }
 
 // Simulate the house with known parameters, one sample per minute
-function run(l, { from, hours, stove, k, G = 0, lag = 0, start, out = 10, noise = 0, drop = null }) {
+function run(l, { from, hours, stove, k, G = 0, lag = 0, start, out = 10, noise = 0, drop = null, power }) {
   let T = start;
   let R = start - 0.3;
   const samples = [];
   for (let i = 0; i <= hours * 60; i++) {
     const t = from + i * MIN;
     const on = stove !== 'off' && i >= lag;
-    l.observe({ t, comfort: Math.round((T + (noise ? Math.sin(i) * noise : 0)) * 10) / 10, regulation: Math.round(R * 10) / 10, outdoor: out, stove });
+    l.observe({ t, comfort: Math.round((T + (noise ? Math.sin(i) * noise : 0)) * 10) / 10, regulation: Math.round(R * 10) / 10, outdoor: out, stove, power });
     samples.push(T);
     T += ((on ? G : 0) - k * (T - out)) / 60;
     R += ((on ? G * 0.4 : 0) - k * 0.6 * (R - out)) / 60;
@@ -140,4 +140,20 @@ test('rebuilds the loss curve from the 0.3.1 journal', () => {
   assert.strictEqual(n[0].date, '2026-10-28');
   assert.strictEqual(n[0].comfort, 0.137);
   assert.strictEqual(n[0].regulation, 0.086);
+});
+
+test('learns the heating gain per power level and uses it once confirmed', () => {
+  const { l } = learner();
+  for (let d = 0; d < 3; d++) {
+    const day = Date.parse('2026-10-29T04:00:00Z') + d * 86400e3;
+    run(l, { from: day, hours: 2.5, stove: 'heating', k: 0.012, G: 1.2, lag: 25, start: 18, out: 6, power: 5 });
+    l.observe({ t: day + 151 * MIN, comfort: 20, regulation: 20, outdoor: 6, stove: 'cooling', power: 5 });
+  }
+  const bp = l.summary().byPower.comfort;
+  assert.strictEqual(bp[5].samples, 3);
+  assert.ok(Math.abs(bp[5].value - 1.2) < 0.15, `gain P5=${bp[5].value}`);
+  assert.strictEqual(l.gainFor('comfort', 5), l.data.byPower.comfort[5].value);
+  assert.strictEqual(l.gainFor('comfort', 2), l.param('comfort', 'gain'), 'unknown level: overall gain');
+  l.reset();
+  assert.deepStrictEqual(l.summary().byPower.comfort || {}, {});
 });
