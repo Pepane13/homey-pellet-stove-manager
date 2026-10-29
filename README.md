@@ -68,10 +68,12 @@ the date of insulation works. Resetting the learning keeps this curve.
 
 ## Release (no computer needed)
 
-1. GitHub → Actions → **Update Homey App Version**: choose patch/minor/major and write the changelog
-   (bumps the version, commits, tags and creates a GitHub release).
-2. GitHub → Actions → **Publish Homey App**: builds and uploads a Draft to the Homey developer tools
+1. Bump `version` in `package.json`, `.homeycompose/app.json` and `app.json`, and add the en + fr entry
+   for that version in `.homeychangelog.json`.
+2. Push to `main`: the **Publish to the Homey App Store** workflow runs the tests and the publish-level
+   validation, then, if the version has no `vX.Y.Z` tag yet, publishes it and creates the tag
    (needs the `HOMEY_PAT` repository secret, token from https://tools.developer.homey.app/me).
+   Pull requests only run the tests and validation.
 3. In the developer tools, move the build to **Test**, then install or update it from
    https://homey.app/a/com.pepane13.pelletstove/test/.
 
