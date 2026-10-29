@@ -167,8 +167,8 @@
     "forecast": "Forecast"
   },
   "plan": {
-    "not_needed": "No need to start for {{target}} °C",
-    "start_at": "Start at {{time}} for {{target}} °C",
-    "unreachable": "Start now: {{expected}} °C instead of {{target}} °C"
+    "not_needed": "No need to start for __target__ °C",
+    "start_at": "Start at __time__ for __target__ °C",
+    "unreachable": "Start now: __expected__ °C instead of __target__ °C"
   }
 }

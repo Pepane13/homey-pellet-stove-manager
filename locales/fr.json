@@ -167,8 +167,8 @@
     "forecast": "Prévision"
   },
   "plan": {
-    "not_needed": "Pas besoin d'allumer pour {{target}} °C",
-    "start_at": "Allumer à {{time}} pour {{target}} °C",
-    "unreachable": "Allumer maintenant : {{expected}} °C au lieu de {{target}} °C"
+    "not_needed": "Pas besoin d'allumer pour __target__ °C",
+    "start_at": "Allumer à __time__ pour __target__ °C",
+    "unreachable": "Allumer maintenant : __expected__ °C au lieu de __target__ °C"
   }
 }

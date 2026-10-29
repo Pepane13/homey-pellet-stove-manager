@@ -5,5 +5,6 @@
   "0.2.1": { "en": "Météo-France AROME forecast and forecast accuracy tracking.", "fr": "Prévision Météo-France AROME et suivi de la précision des prévisions." },
   "0.3.0": { "en": "House learning (losses, heating rate, lag) and start time computation.", "fr": "Apprentissage de la maison (pertes, vitesse de chauffe, délai) et calcul de l'heure d'allumage." },
   "0.3.1": { "en": "Flow cards: reach a temperature at a time, time to start heating.", "fr": "Cartes de Flow : atteindre une température à une heure, il est temps d'allumer." },
-  "0.3.2": { "en": "Nightly heat-loss curve to follow insulation works.", "fr": "Courbe des pertes nuit après nuit pour suivre les travaux d'isolation." }
+  "0.3.2": { "en": "Nightly heat-loss curve to follow insulation works.", "fr": "Courbe des pertes nuit après nuit pour suivre les travaux d'isolation." },
+  "0.3.3": { "en": "The start time shown on the device now displays the actual time and target temperature instead of unfilled placeholders.", "fr": "L'heure d'allumage affichée sur l'appareil indique bien l'heure et la température visée, au lieu d'un texte aux champs non remplis." }
 }
