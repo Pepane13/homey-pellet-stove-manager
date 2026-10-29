@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Tank level",
+    "fr": "Niveau du réservoir"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/flame.svg",
+  "insights": true,
+  "units": {
+    "en": "%",
+    "fr": "%"
+  },
+  "decimals": 0
+}

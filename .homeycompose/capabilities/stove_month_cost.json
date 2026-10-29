@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Pellet cost this month",
+    "fr": "Coût pellets ce mois"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/flame.svg",
+  "insights": true,
+  "units": {
+    "en": "€",
+    "fr": "€"
+  },
+  "decimals": 2
+}

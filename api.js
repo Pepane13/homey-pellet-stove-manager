@@ -7,6 +7,9 @@ module.exports = {
   async getStatus({ homey }) {
     return homey.app.getSensorStatus();
   },
+  async consumablesAction({ homey, body }) {
+    return homey.app.consumablesAction(body || {});
+  },
   async resetLearning({ homey }) {
     return homey.app.resetLearning();
   },

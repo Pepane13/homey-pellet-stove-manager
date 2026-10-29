@@ -18,6 +18,15 @@ const LATER_CAPABILITIES = [
   'stove_start_time',
   'stove_heat_loss',
   'stove_heat_loss_median',
+  'stove_pellets_left',
+  'stove_pellets_percent',
+  'stove_pellets_empty_at',
+  'stove_month_kg',
+  'stove_month_cost',
+  'stove_month_forecast',
+  'stove_cleaning_hours',
+  'stove_service_next',
+  'stove_service_hours_left',
 ];
 
 class StoveDevice extends Homey.Device {
@@ -51,6 +60,11 @@ class StoveDevice extends Homey.Device {
     const loss = this.homey.app.thermal.lossSummary();
     const last = loss.nights[loss.nights.length - 1];
     this._applyHeatLoss({ night: last, summary: loss }).catch(this.error);
+    this._onConsumables = (c) => this._applyConsumables(c).catch(this.error);
+    this._onConsumableEvent = (e) => this.homey.flow.getDeviceTriggerCard(e.type).trigger(this, e.tokens).catch(this.error);
+    this.homey.app.on('consumables', this._onConsumables);
+    this.homey.app.on('consumable_event', this._onConsumableEvent);
+    this._applyConsumables(this.homey.app.consumables.summary()).catch(this.error);
 
     this._connect();
     this._schedule(2000);
@@ -81,6 +95,7 @@ class StoveDevice extends Homey.Device {
       const state = await this.client.snapshot();
       await this._apply(state);
       this.homey.app.setStoveStatus(state.status.status);
+      this.homey.app.observeStove(state);
       if (this.failures >= UNAVAILABLE_AFTER) this.log('Connection restored');
       this.failures = 0;
       if (!this.getAvailable()) await this.setAvailable();
@@ -141,6 +156,28 @@ class StoveDevice extends Homey.Device {
       const key = s.outdoorSource === 'backup' && s.outdoorCorrected ? 'backup_corrected' : s.outdoorSource;
       await this._set('stove_outdoor_source', `${this.homey.__(`outdoor_source.${key}`)} – ${s.outdoorSensor || ''}`);
     }
+  }
+
+  async _applyConsumables(c) {
+    const tz = this.homey.clock.getTimezone();
+    const p = c.pellets;
+    await this._set('stove_pellets_left', p.kgLeft);
+    await this._set('stove_pellets_percent', p.percent);
+    let empty = '—';
+    if (p.emptyAt) {
+      empty = new Date(p.emptyAt).toLocaleString('fr-FR', {
+        weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: tz,
+      });
+    }
+    await this._set('stove_pellets_empty_at', empty);
+    await this._set('stove_month_kg', c.month.kg);
+    await this._set('stove_month_cost', c.month.cost);
+    if (c.month.forecast) await this._set('stove_month_forecast', c.month.forecast.bags);
+    await this._set('stove_cleaning_hours', c.cleaning.hours);
+    const m = c.maintenance;
+    const [y, mo, d] = m.nextDate.split('-');
+    await this._set('stove_service_next', `${d}/${mo}/${y}`);
+    if (m.hoursLeft != null) await this._set('stove_service_hours_left', m.hoursLeft);
   }
 
   async _applyHeatLoss({ night, summary }) {
@@ -219,6 +256,8 @@ class StoveDevice extends Homey.Device {
     if (this._onPlan) this.homey.app.off('plan', this._onPlan);
     if (this._onStartDue) this.homey.app.off('heat_start_due', this._onStartDue);
     if (this._onHeatLoss) this.homey.app.off('heat_loss', this._onHeatLoss);
+    if (this._onConsumables) this.homey.app.off('consumables', this._onConsumables);
+    if (this._onConsumableEvent) this.homey.app.off('consumable_event', this._onConsumableEvent);
     this.homey.clearTimeout(this.pollTimer);
     if (this.connection) this.connection.close();
   }

@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Pellets this month",
+    "fr": "Pellets ce mois"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/flame.svg",
+  "insights": true,
+  "units": {
+    "en": "kg",
+    "fr": "kg"
+  },
+  "decimals": 0
+}

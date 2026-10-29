@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.pepane13.pelletstove",
-  "version": "0.3.3",
+  "version": "0.4.0",
   "compatibility": ">=12.0.0",
   "sdk": 3,
   "platforms": [
@@ -63,6 +63,10 @@
     "resetLearning": {
       "method": "POST",
       "path": "/learning/reset"
+    },
+    "consumablesAction": {
+      "method": "POST",
+      "path": "/consumables"
     }
   },
   "flow": {
@@ -319,6 +323,328 @@
             "filter": "driver_id=stove"
           }
         ]
+      },
+      {
+        "id": "pellets_low",
+        "title": {
+          "en": "The pellet tank is low",
+          "fr": "Le réservoir de pellets est bas"
+        },
+        "tokens": [
+          {
+            "name": "kg_left",
+            "type": "number",
+            "title": {
+              "en": "Pellets left (kg)",
+              "fr": "Pellets restants (kg)"
+            },
+            "example": 6.5
+          },
+          {
+            "name": "percent",
+            "type": "number",
+            "title": {
+              "en": "Level (%)",
+              "fr": "Niveau (%)"
+            },
+            "example": 30
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "pellets_refill_advised",
+        "title": {
+          "en": "A refill is advised tonight",
+          "fr": "Une recharge est conseillée ce soir"
+        },
+        "tokens": [
+          {
+            "name": "kg_left",
+            "type": "number",
+            "title": {
+              "en": "Pellets left (kg)",
+              "fr": "Pellets restants (kg)"
+            },
+            "example": 6.5
+          },
+          {
+            "name": "kg_needed",
+            "type": "number",
+            "title": {
+              "en": "Need until morning (kg)",
+              "fr": "Besoin jusqu'au matin (kg)"
+            },
+            "example": 8
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "pellets_refill_not_needed",
+        "title": {
+          "en": "No refill needed tonight",
+          "fr": "Pas besoin de recharger ce soir"
+        },
+        "tokens": [
+          {
+            "name": "kg_left",
+            "type": "number",
+            "title": {
+              "en": "Pellets left (kg)",
+              "fr": "Pellets restants (kg)"
+            },
+            "example": 6.5
+          },
+          {
+            "name": "kg_needed",
+            "type": "number",
+            "title": {
+              "en": "Need until morning (kg)",
+              "fr": "Besoin jusqu'au matin (kg)"
+            },
+            "example": 8
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "monthly_forecast",
+        "title": {
+          "en": "Monthly pellet forecast",
+          "fr": "Prévision mensuelle de pellets"
+        },
+        "tokens": [
+          {
+            "name": "month",
+            "type": "string",
+            "title": {
+              "en": "Month",
+              "fr": "Mois"
+            },
+            "example": "décembre 2026"
+          },
+          {
+            "name": "bags",
+            "type": "number",
+            "title": {
+              "en": "Bags of 15 kg",
+              "fr": "Sacs de 15 kg"
+            },
+            "example": 18
+          },
+          {
+            "name": "kg",
+            "type": "number",
+            "title": {
+              "en": "Pellets (kg)",
+              "fr": "Pellets (kg)"
+            },
+            "example": 266
+          },
+          {
+            "name": "cost",
+            "type": "number",
+            "title": {
+              "en": "Cost (€)",
+              "fr": "Coût (€)"
+            },
+            "example": 98.82
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "cleaning_soon",
+        "title": {
+          "en": "Cleaning will soon be needed",
+          "fr": "Le nettoyage sera bientôt nécessaire"
+        },
+        "tokens": [
+          {
+            "name": "hours",
+            "type": "number",
+            "title": {
+              "en": "Burn hours",
+              "fr": "Heures de combustion"
+            },
+            "example": 18
+          },
+          {
+            "name": "threshold",
+            "type": "number",
+            "title": {
+              "en": "Threshold (h)",
+              "fr": "Seuil (h)"
+            },
+            "example": 22
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "cleaning_due",
+        "title": {
+          "en": "The stove needs cleaning",
+          "fr": "Le poêle doit être nettoyé"
+        },
+        "tokens": [
+          {
+            "name": "hours",
+            "type": "number",
+            "title": {
+              "en": "Burn hours",
+              "fr": "Heures de combustion"
+            },
+            "example": 22
+          },
+          {
+            "name": "threshold",
+            "type": "number",
+            "title": {
+              "en": "Threshold (h)",
+              "fr": "Seuil (h)"
+            },
+            "example": 22
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "maintenance_soon",
+        "title": {
+          "en": "Professional maintenance is coming up",
+          "fr": "L'entretien professionnel approche"
+        },
+        "tokens": [
+          {
+            "name": "date",
+            "type": "string",
+            "title": {
+              "en": "Due date",
+              "fr": "Échéance"
+            },
+            "example": "2027-08-27"
+          },
+          {
+            "name": "days_left",
+            "type": "number",
+            "title": {
+              "en": "Days left",
+              "fr": "Jours restants"
+            },
+            "example": 30
+          },
+          {
+            "name": "hours_left",
+            "type": "number",
+            "title": {
+              "en": "Hours left",
+              "fr": "Heures restantes"
+            },
+            "example": 340
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "maintenance_due",
+        "title": {
+          "en": "Professional maintenance is due",
+          "fr": "L'entretien professionnel est dû"
+        },
+        "tokens": [
+          {
+            "name": "date",
+            "type": "string",
+            "title": {
+              "en": "Due date",
+              "fr": "Échéance"
+            },
+            "example": "2027-08-27"
+          },
+          {
+            "name": "days_left",
+            "type": "number",
+            "title": {
+              "en": "Days left",
+              "fr": "Jours restants"
+            },
+            "example": 0
+          },
+          {
+            "name": "hours_left",
+            "type": "number",
+            "title": {
+              "en": "Hours left",
+              "fr": "Heures restantes"
+            },
+            "example": 0
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "chimney_sweep_reminder",
+        "title": {
+          "en": "Mid-season chimney sweeping reminder",
+          "fr": "Rappel de ramonage de mi-saison"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
       }
     ],
     "conditions": [
@@ -355,6 +681,63 @@
         "title": {
           "en": "A temperature target !{{is|is not}} pending",
           "fr": "Un objectif de température !{{est|n'est pas}} en attente"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "pellets_below",
+        "title": {
+          "en": "Pellets !{{are|are not}} below a level",
+          "fr": "Les pellets !{{sont|ne sont pas}} sous un niveau"
+        },
+        "titleFormatted": {
+          "en": "Pellets !{{are|are not}} below [[kg]] kg",
+          "fr": "Les pellets !{{sont|ne sont pas}} sous [[kg]] kg"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          },
+          {
+            "type": "number",
+            "name": "kg",
+            "min": 0,
+            "max": 30,
+            "step": 0.5,
+            "placeholder": {
+              "en": "5",
+              "fr": "5"
+            }
+          }
+        ]
+      },
+      {
+        "id": "cleaning_needed",
+        "title": {
+          "en": "Cleaning !{{is|is not}} needed",
+          "fr": "Le nettoyage !{{est|n'est pas}} nécessaire"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "maintenance_needed",
+        "title": {
+          "en": "Professional maintenance !{{is|is not}} due",
+          "fr": "L'entretien professionnel !{{est|n'est pas}} dû"
         },
         "args": [
           {
@@ -416,6 +799,90 @@
             "filter": "driver_id=stove"
           }
         ]
+      },
+      {
+        "id": "pellets_refilled",
+        "title": {
+          "en": "Tank refilled (full)",
+          "fr": "Réservoir rechargé (plein)"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "set_bag_price",
+        "title": {
+          "en": "Set the bag price",
+          "fr": "Régler le prix du sac"
+        },
+        "titleFormatted": {
+          "en": "Bag price: [[price]] €",
+          "fr": "Prix du sac : [[price]] €"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          },
+          {
+            "type": "number",
+            "name": "price",
+            "min": 0.5,
+            "max": 50,
+            "step": 0.01,
+            "placeholder": {
+              "en": "5.49",
+              "fr": "5,49"
+            }
+          }
+        ]
+      },
+      {
+        "id": "cleaning_done",
+        "title": {
+          "en": "Cleaning done",
+          "fr": "Nettoyage fait"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "maintenance_done",
+        "title": {
+          "en": "Professional maintenance done",
+          "fr": "Entretien professionnel effectué"
+        },
+        "titleFormatted": {
+          "en": "Professional maintenance done: [[note]]",
+          "fr": "Entretien professionnel effectué : [[note]]"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          },
+          {
+            "type": "text",
+            "name": "note",
+            "required": false,
+            "placeholder": {
+              "en": "Annual service + sweeping",
+              "fr": "Entretien annuel + ramonage"
+            }
+          }
+        ]
       }
     ]
   },
@@ -446,7 +913,16 @@
         "stove_heatup_minutes",
         "stove_start_time",
         "stove_heat_loss",
-        "stove_heat_loss_median"
+        "stove_heat_loss_median",
+        "stove_pellets_left",
+        "stove_pellets_percent",
+        "stove_pellets_empty_at",
+        "stove_month_kg",
+        "stove_month_cost",
+        "stove_month_forecast",
+        "stove_cleaning_hours",
+        "stove_service_next",
+        "stove_service_hours_left"
       ],
       "capabilitiesOptions": {
         "measure_temperature.flue_gas": {
@@ -608,6 +1084,23 @@
       "insights": true,
       "decimals": 0
     },
+    "stove_cleaning_hours": {
+      "type": "number",
+      "title": {
+        "en": "Burn hours since cleaning",
+        "fr": "Heures depuis le nettoyage"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/wrench.svg",
+      "insights": true,
+      "units": {
+        "en": "h",
+        "fr": "h"
+      },
+      "decimals": 1
+    },
     "stove_comfort_gap": {
       "type": "number",
       "title": {
@@ -747,6 +1240,57 @@
       },
       "decimals": 0
     },
+    "stove_month_cost": {
+      "type": "number",
+      "title": {
+        "en": "Pellet cost this month",
+        "fr": "Coût pellets ce mois"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/flame.svg",
+      "insights": true,
+      "units": {
+        "en": "€",
+        "fr": "€"
+      },
+      "decimals": 2
+    },
+    "stove_month_forecast": {
+      "type": "number",
+      "title": {
+        "en": "Bags forecast this month",
+        "fr": "Sacs prévus ce mois"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/flame.svg",
+      "insights": false,
+      "units": {
+        "en": "bags",
+        "fr": "sacs"
+      },
+      "decimals": 0
+    },
+    "stove_month_kg": {
+      "type": "number",
+      "title": {
+        "en": "Pellets this month",
+        "fr": "Pellets ce mois"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/flame.svg",
+      "insights": true,
+      "units": {
+        "en": "kg",
+        "fr": "kg"
+      },
+      "decimals": 0
+    },
     "stove_outdoor_source": {
       "type": "string",
       "title": {
@@ -758,6 +1302,52 @@
       "uiComponent": "sensor",
       "icon": "/assets/icons/thermo.svg",
       "insights": false
+    },
+    "stove_pellets_empty_at": {
+      "type": "string",
+      "title": {
+        "en": "Tank empty around",
+        "fr": "Réservoir vide vers"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/clock.svg",
+      "insights": false
+    },
+    "stove_pellets_left": {
+      "type": "number",
+      "title": {
+        "en": "Pellets in the tank",
+        "fr": "Pellets dans le réservoir"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/flame.svg",
+      "insights": true,
+      "units": {
+        "en": "kg",
+        "fr": "kg"
+      },
+      "decimals": 1
+    },
+    "stove_pellets_percent": {
+      "type": "number",
+      "title": {
+        "en": "Tank level",
+        "fr": "Niveau du réservoir"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/flame.svg",
+      "insights": true,
+      "units": {
+        "en": "%",
+        "fr": "%"
+      },
+      "decimals": 0
     },
     "stove_power_level": {
       "type": "number",
@@ -774,6 +1364,35 @@
       "max": 5,
       "step": 1,
       "decimals": 0
+    },
+    "stove_service_hours_left": {
+      "type": "number",
+      "title": {
+        "en": "Hours before maintenance",
+        "fr": "Heures avant entretien"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/wrench.svg",
+      "insights": false,
+      "units": {
+        "en": "h",
+        "fr": "h"
+      },
+      "decimals": 0
+    },
+    "stove_service_next": {
+      "type": "string",
+      "title": {
+        "en": "Next maintenance",
+        "fr": "Prochain entretien"
+      },
+      "getable": true,
+      "setable": false,
+      "uiComponent": "sensor",
+      "icon": "/assets/icons/wrench.svg",
+      "insights": false
     },
     "stove_start_time": {
       "type": "string",

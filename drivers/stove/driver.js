@@ -25,6 +25,22 @@ class StoveDriver extends Homey.Driver {
         this.homey.app.targets.cancel();
         this.homey.app.refreshSensors();
       });
+    const cons = () => this.homey.app.consumables;
+    const after = () => this.homey.app.publishConsumables();
+    this.homey.flow.getConditionCard('pellets_below')
+      .registerRunListener(async ({ kg }) => cons().pelletState().kgLeft < Number(kg));
+    this.homey.flow.getConditionCard('cleaning_needed')
+      .registerRunListener(async () => cons().cleaningState().due);
+    this.homey.flow.getConditionCard('maintenance_needed')
+      .registerRunListener(async () => cons().maintenanceState().due);
+    this.homey.flow.getActionCard('pellets_refilled')
+      .registerRunListener(async () => { cons().refilled(); after(); });
+    this.homey.flow.getActionCard('set_bag_price')
+      .registerRunListener(async ({ price }) => { cons().setBagPrice(price); after(); });
+    this.homey.flow.getActionCard('cleaning_done')
+      .registerRunListener(async () => { cons().cleaned(); after(); });
+    this.homey.flow.getActionCard('maintenance_done')
+      .registerRunListener(async ({ note }) => { cons().serviced({ note: note || '' }); after(); });
     this.log('Pellet stove driver initialised');
   }
 

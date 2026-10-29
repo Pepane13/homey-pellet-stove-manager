@@ -24,7 +24,16 @@
     "stove_heatup_minutes",
     "stove_start_time",
     "stove_heat_loss",
-    "stove_heat_loss_median"
+    "stove_heat_loss_median",
+    "stove_pellets_left",
+    "stove_pellets_percent",
+    "stove_pellets_empty_at",
+    "stove_month_kg",
+    "stove_month_cost",
+    "stove_month_forecast",
+    "stove_cleaning_hours",
+    "stove_service_next",
+    "stove_service_hours_left"
   ],
   "capabilitiesOptions": {
     "measure_temperature.flue_gas": {

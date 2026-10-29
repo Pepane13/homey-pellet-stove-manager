@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Pellets in the tank",
+    "fr": "Pellets dans le réservoir"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/flame.svg",
+  "insights": true,
+  "units": {
+    "en": "kg",
+    "fr": "kg"
+  },
+  "decimals": 1
+}

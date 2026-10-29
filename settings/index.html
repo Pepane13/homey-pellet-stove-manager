@@ -18,6 +18,7 @@
     #insChart svg { width: 100%; height: auto; display: block; margin: 6px 0; }
     .legend { font-size: 11px; color: #555; display: flex; gap: 12px; flex-wrap: wrap; }
     .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+    #msg3 { margin-top: 8px; font-size: 13px; min-height: 18px; }
     #msg, #msg2 { margin-top: 8px; font-size: 13px; min-height: 18px; }
     button.secondary { background: #fff; color: #e8681a; border: 1px solid #e8681a; padding: 9px; font-size: 14px; margin-top: 12px; }
     td.sm { font-size: 12px; color: #555; }
@@ -67,6 +68,23 @@
 
   <h2 data-i18n="settings.status"></h2>
   <table id="status"><tr><td data-i18n="settings.loading"></td></tr></table>
+
+  <h2 data-i18n="settings.co_title"></h2>
+  <table id="coTable"></table>
+  <div class="row" style="gap:6px;flex-wrap:wrap">
+    <button id="coRefill" class="secondary" style="flex:1" data-i18n="settings.co_refill"></button>
+    <button id="coClean" class="secondary" style="flex:1" data-i18n="settings.co_clean"></button>
+  </div>
+  <h2 style="font-size:14px" data-i18n="settings.co_service_title"></h2>
+  <table id="coJournal"></table>
+  <div class="row"><label for="svcDate" style="flex:1" data-i18n="settings.co_svc_date"></label><input type="date" id="svcDate" style="width:150px;padding:6px;border:1px solid #ccd;border-radius:6px"></div>
+  <div class="row"><input type="text" id="svcNote" style="flex:1;padding:7px;border:1px solid #ccd;border-radius:6px"></div>
+  <div class="row"><label for="svcCost" style="flex:1" data-i18n="settings.co_svc_cost"></label><input type="number" id="svcCost" min="0" step="1"></div>
+  <button id="coService" class="secondary" data-i18n="settings.co_service"></button>
+  <h2 style="font-size:14px" data-i18n="settings.co_settings"></h2>
+  <div class="role" id="coSettings"></div>
+  <button id="coSave" class="secondary" data-i18n="settings.co_save"></button>
+  <div id="msg3"></div>
 
   <h2 data-i18n="settings.ins_title"></h2>
   <p class="hint" data-i18n="settings.ins_desc"></p>
@@ -262,6 +280,54 @@
       }).join('');
     }
 
+    var CO_FIELDS = [
+      { k: 'bagPrice', step: 0.01 }, { k: 'bagKg', step: 1 }, { k: 'tankKg', step: 1 }, { k: 'lowKg', step: 0.5 },
+      { k: 'adviceTime', time: true }, { k: 'morningTime', time: true }, { k: 'cleaningHours', step: 1 },
+      { k: 'serviceMonths', step: 1 }, { k: 'serviceHours', step: 50 }, { k: 'midSeasonSweep', bool: true }
+    ];
+    var coRendered = false;
+
+    function showConsumables(s) {
+      var c = s.consumables;
+      if (!c) return;
+      var tz = s.timeZone;
+      var row = function (label, value, cls) { return '<tr><td>' + esc(label) + '</td><td class="v ' + (cls || '') + '">' + esc(value) + '</td></tr>'; };
+      var p = c.pellets, m = c.maintenance, mo = c.month, cl = c.cleaning;
+      var html = '';
+      html += row(t('settings.co_left'), p.kgLeft + ' kg (' + p.percent + ' %)', p.kgLeft <= c.config.lowKg ? 'ko' : 'ok');
+      html += row(t('settings.co_empty_at'), p.emptyAt ? dhm(p.emptyAt, tz) : '—');
+      html += row(t('settings.co_refilled_at'), dhm(p.refillAt, tz));
+      html += row(t('settings.co_factor'), p.factor + ' (' + p.factorSamples + ')');
+      html += row(t('settings.co_month'), mo.kg + ' kg · ' + mo.bags + ' ' + t('settings.co_bags') + ' · ' + mo.cost + ' €');
+      if (mo.forecast) html += row(t('settings.co_forecast') + ' (' + mo.forecast.label + ')', mo.forecast.bags + ' ' + t('settings.co_bags') + ' · ' + mo.forecast.kg + ' kg · ' + mo.forecast.cost + ' €');
+      html += row(t('settings.co_cleaning'), cl.hours + ' / ' + cl.threshold + ' h', cl.due ? 'ko' : 'ok');
+      var dfr = function (d) { var x = d.split('-'); return x[2] + '/' + x[1] + '/' + x[0]; };
+      html += row(t('settings.co_service_next'), dfr(m.nextDate) + (m.hoursLeft != null ? ' · ' + m.hoursLeft + ' h' : ''), m.due ? 'ko' : (m.soon ? '' : 'ok'));
+      el('coTable').innerHTML = html;
+      el('coJournal').innerHTML = m.journal.map(function (j) {
+        return '<tr><td>' + esc(dfr(j.date)) + '<br><span class="sm">' + esc(j.note || j.type) + '</span></td><td class="v sm">' +
+          (j.hoursTotal != null ? esc(j.hoursTotal) + ' h' : '') + (j.hoursService != null ? ' / ' + esc(j.hoursService) + ' h' : '') +
+          (j.cost != null ? '<br>' + esc(j.cost) + ' €' : '') + '</td></tr>';
+      }).join('');
+      if (!coRendered) {
+        coRendered = true;
+        el('coSettings').innerHTML = CO_FIELDS.map(function (f) {
+          var v = c.config[f.k];
+          var input = f.bool ? '<input type="checkbox" id="co_' + f.k + '"' + (v ? ' checked' : '') + '>'
+            : f.time ? '<input type="time" id="co_' + f.k + '" value="' + esc(v) + '" style="width:110px;padding:6px;border:1px solid #ccd;border-radius:6px">'
+              : '<input type="number" id="co_' + f.k + '" step="' + f.step + '" value="' + esc(v) + '">';
+          return '<div class="row"><label for="co_' + f.k + '" style="flex:1">' + esc(t('settings.co_' + f.k)) + '</label>' + input + '</div>';
+        }).join('');
+      }
+    }
+
+    function coAction(body) {
+      Homey.api('POST', '/consumables', body, function (err) {
+        el('msg3').textContent = err ? (err.message || String(err)) : t('settings.saved');
+        if (!err) showStatus();
+      });
+    }
+
     function showStatus() {
       Homey.api('GET', '/status', null, function (err, s) {
         if (err || !s) { el('status').innerHTML = '<tr><td>' + esc(err ? err.message || err : t('settings.no_status')) + '</td></tr>'; return; }
@@ -295,6 +361,7 @@
           : t('settings.targets_none'));
         html += row(t('settings.st_plan'), planText(s) + (s.plan && s.plan.source === 'settings' ? ' ' + t('settings.plan_from_settings') : ''), s.plan ? s.plan.reachable : undefined);
         el('status').innerHTML = html;
+        showConsumables(s);
         showLearning(s);
       });
     }
@@ -327,6 +394,29 @@
           el('msg2').textContent = err ? (err.message || String(err)) : t('settings.learn_reset_confirm');
           if (!err) showStatus();
         });
+      });
+    });
+
+    el('svcNote').placeholder = t('settings.co_svc_note');
+    el('coRefill').addEventListener('click', function () { coAction({ action: 'refilled' }); });
+    el('coClean').addEventListener('click', function () { coAction({ action: 'cleaned' }); });
+    el('coService').addEventListener('click', function () {
+      Homey.confirm(t('settings.co_service') + ' ?', 'info', function (e, ok) {
+        if (!ok) return;
+        var cost = el('svcCost').value;
+        coAction({ action: 'serviced', date: el('svcDate').value || null, note: el('svcNote').value || '', cost: cost === '' ? null : Number(cost) });
+      });
+    });
+    el('coSave').addEventListener('click', function () {
+      var out = {};
+      CO_FIELDS.forEach(function (f) {
+        var x = el('co_' + f.k);
+        if (!x) return;
+        out[f.k] = f.bool ? x.checked : f.time ? x.value : Number(x.value);
+      });
+      Homey.set('consumables_settings', out, function (err) {
+        el('msg3').textContent = err ? (err.message || String(err)) : t('settings.saved');
+        if (!err) setTimeout(showStatus, 800);
       });
     });
 

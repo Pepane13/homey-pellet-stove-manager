@@ -1,0 +1,17 @@
+{
+  "type": "number",
+  "title": {
+    "en": "Bags forecast this month",
+    "fr": "Sacs prévus ce mois"
+  },
+  "getable": true,
+  "setable": false,
+  "uiComponent": "sensor",
+  "icon": "/assets/icons/flame.svg",
+  "insights": false,
+  "units": {
+    "en": "bags",
+    "fr": "sacs"
+  },
+  "decimals": 0
+}

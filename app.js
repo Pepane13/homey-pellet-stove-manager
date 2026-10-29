@@ -6,6 +6,7 @@ const { SensorHub } = require('./lib/sensors');
 const { MeteoFranceForecast, valueAt } = require('./lib/forecast');
 const { ThermalLearner, nextOccurrence } = require('./lib/thermal');
 const { TargetPlanner } = require('./lib/targets');
+const { Consumables } = require('./lib/consumables');
 
 const ANTICIPATION_DEFAULTS = Object.freeze({ target: 21, time: '06:20', sensor: 'comfort' });
 
@@ -43,6 +44,11 @@ class PelletStoveApp extends Homey.App {
       store: this.homey.settings,
       timeZone: () => this.homey.clock.getTimezone(),
     });
+    this.consumables = new Consumables({
+      store: this.homey.settings,
+      timeZone: () => this.homey.clock.getTimezone(),
+      log: this.log.bind(this),
+    });
     this.stoveStatus = null;
     this.plan = null;
     this.sensors.on('update', (state) => this._onSensorState(state));
@@ -50,6 +56,7 @@ class PelletStoveApp extends Homey.App {
 
     this.homey.settings.on('set', (key) => {
       if (key === 'sensors' || key === 'anticipation') this.refreshSensors();
+      if (key === 'consumables_settings') this.publishConsumables();
     });
     this.sensorTimer = this.homey.setInterval(() => this.refreshSensors(), SENSOR_INTERVAL);
     this.homey.setTimeout(() => this.refreshSensors(), 5000);
@@ -67,6 +74,33 @@ class PelletStoveApp extends Homey.App {
     } finally {
       this.refreshing = false;
     }
+  }
+
+  /** Stove snapshot from the device: pellets, cleaning and maintenance counters. */
+  observeStove(state) {
+    try {
+      this.consumables.observe({
+        t: state.at || Date.now(),
+        status: state.status.status,
+        power: state.powerLevel,
+        errorCode: state.error ? state.error.code : 0,
+        hoursService: state.hoursService,
+        hoursTotal: state.hoursTotal,
+      });
+      this.publishConsumables();
+    } catch (err) {
+      this.error('Consumables update failed:', err.message);
+    }
+  }
+
+  /** Sends the consumables state and pending events (Flow triggers) to the device. */
+  publishConsumables() {
+    const outdoor = this.sensors.state ? this.sensors.state.outdoor : null;
+    for (const e of this.consumables.takeEvents()) {
+      this.log(`Event ${e.type}`, JSON.stringify(e.tokens));
+      this.emit('consumable_event', e);
+    }
+    this.emit('consumables', this.consumables.summary(outdoor));
   }
 
   /** Called by the stove device on each poll (null when the stove is unreachable). */
@@ -138,6 +172,8 @@ class PelletStoveApp extends Homey.App {
           return p && { ...p, source: 'settings', time: cfg.time };
         })();
       this.emit('plan', this.plan);
+      this.consumables.tick(state.outdoor);
+      this.publishConsumables();
     } catch (err) {
       this.error('Anticipation failed:', err.message);
     }
@@ -167,7 +203,18 @@ class PelletStoveApp extends Homey.App {
       anticipation: this.anticipationConfig(),
       stoveStatus: this.stoveStatus,
       timeZone: this.homey.clock.getTimezone(),
+      consumables: this.consumables.summary(state.outdoor),
     };
+  }
+
+  async consumablesAction(body) {
+    const c = this.consumables;
+    if (body.action === 'refilled') c.refilled();
+    else if (body.action === 'cleaned') c.cleaned();
+    else if (body.action === 'serviced') c.serviced({ date: body.date || null, note: body.note || '', cost: body.cost ?? null });
+    else throw new Error('Unknown action');
+    this.publishConsumables();
+    return c.summary(this.sensors.state ? this.sensors.state.outdoor : null);
   }
 
   async resetLearning() {
