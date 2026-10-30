@@ -58,5 +58,9 @@
   "0.8.0": {
     "en": "Widget: thermostat card with the current temperature, the target and ˄ ˅ buttons to change it (manual setpoint, or held living-room temperature with the Netatmo/direct regulation), plus « Schedule » to go back to the program.",
     "fr": "Widget : carte thermostat avec la température actuelle, la consigne et des boutons ˄ ˅ pour la modifier (consigne manuelle, ou température maintenue au séjour avec la régulation Netatmo/directe), et « Programme » pour revenir au planning."
+  },
+  "0.8.1": {
+    "en": "Widget: the indoor temperature shown on the thermostat card is no longer repeated above it.",
+    "fr": "Widget : la température intérieure affichée sur la carte thermostat n'est plus répétée au-dessus."
   }
 }

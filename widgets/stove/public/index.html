@@ -75,9 +75,17 @@
       var dhm = function (ms) { return new Date(ms).toLocaleString(d.lang === 'fr' ? 'fr-FR' : 'en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: tz }); };
       var html = '<div class="top ' + cls + '"><div class="flame">' + FLAME + '</div><div style="flex:1">' +
         '<div class="st">' + esc(d.available ? (d.statusText || '—') : t.unreachable) + (heating && d.power ? ' · P' + esc(d.power) : '') + '</div>' +
-        '<div class="sub ' + (d.error ? 'ko' : '') + '">' + esc(d.error || (d.hold ? t.hold + ' ' + d.hold.target + ' °C' : (d.startText && d.startText !== '—' ? d.startText : ''))) + '</div></div></div>';
-      html += '<div class="temps"><div><b>' + deg(d.comfort) + '</b><span>' + t.comfort + '</span></div><div><b>' + deg(d.regulation) +
-        '</b><span>' + t.thermostat + '</span></div><div><b>' + deg(d.outdoor) + '</b><span>' + t.outdoor + '</span></div></div>';
+        '<div class="sub ' + (d.error ? 'ko' : '') + '">' + esc(d.error || (d.hold && !(d.thermostat && !(settings && settings.show_controls === false)) ? t.hold + ' ' + d.hold.target + ' °C' : (d.startText && d.startText !== '—' ? d.startText : ''))) + '</div></div></div>';
+      // the thermostat card already shows one indoor temperature: no duplicate here
+      var card = !!d.thermostat && !(settings && settings.show_controls === false);
+      var cardShowsLiving = d.regulationMode !== 'flows';
+      var cells = [];
+      if (!card || !cardShowsLiving) cells.push([d.comfort, t.comfort]);
+      if (!card || cardShowsLiving) cells.push([d.regulation, t.thermostat]);
+      cells.push([d.outdoor, t.outdoor]);
+      html += '<div class="temps" style="grid-template-columns:repeat(' + cells.length + ',1fr)">' + cells.map(function (c) {
+        return '<div><b>' + deg(c[0]) + '</b><span>' + c[1] + '</span></div>';
+      }).join('') + '</div>';
       var p = d.pellets;
       html += '<div class="line"><span>' + t.pellets + '</span><span class="v ' + (p.low ? 'ko' : '') + '">' + esc(p.kgLeft) + ' kg · ' + esc(p.percent) + ' %</span></div>';
       html += '<div class="bar ' + (p.low ? 'low' : '') + '"><i style="width:' + Math.max(0, Math.min(100, p.percent)) + '%"></i></div>';
