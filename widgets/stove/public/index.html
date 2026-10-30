@@ -190,11 +190,21 @@
     function onHomeyReady(Homey) {
       var settings = Homey.getSettings ? Homey.getSettings() : {};
       var first = true;
+      var lastHeight = 0;
       function load() {
         Homey.api('GET', '/', {}).then(function (d) {
           render(d, settings);
           if (ctlState.pending == null) renderControls(d, settings, Homey, load);
-          if (first) { first = false; Homey.ready({ height: document.body.scrollHeight + 4 }); }
+          // the height follows the content (thermostat card, programs, pellets…) at every refresh
+          var h = Math.ceil(document.body.scrollHeight) + 8;
+          if (first) {
+            first = false; Homey.ready({ height: h }); lastHeight = h;
+            setTimeout(function () { // fonts and layout settle after the first paint
+              var h2 = Math.ceil(document.body.scrollHeight) + 8;
+              if (h2 !== lastHeight && Homey.setHeight) { Homey.setHeight(h2); lastHeight = h2; }
+            }, 800);
+          }
+          else if (h !== lastHeight && Homey.setHeight) { Homey.setHeight(h); lastHeight = h; }
         }).catch(function (err) {
           document.getElementById('w').innerHTML = '<div class="sub ko">' + esc(err && err.message || err) + '</div>';
           if (first) { first = false; Homey.ready(); }

@@ -74,5 +74,9 @@
   "0.8.4": {
     "en": "Widget: buttons to select the thermostat program (its schedules, e.g. Temp 21 / Temp 19) or Away.",
     "fr": "Widget : boutons de sélection du programme du thermostat (ses plannings, par ex. Temp 21 / Temp 19) ou Absent."
+  },
+  "0.8.5": {
+    "en": "Widget: its height follows the content, the bottom lines (pellets, month, cleaning, service) are no longer cut off.",
+    "fr": "Widget : sa hauteur suit le contenu, les lignes du bas (pellets, mois, nettoyage, entretien) ne sont plus coupées."
   }
 }
