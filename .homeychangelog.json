@@ -82,5 +82,9 @@
   "0.8.6": {
     "en": "Widget shows the active thermostat program. New Flow card « Select the thermostat program [Temp 21] » (schedules or Away): used instead of the thermostat's own card, it lets the app know the active program. Until a program is selected through the app, the one whose name matches the setpoint is shown (dashed).",
     "fr": "Le widget affiche le programme actif du thermostat. Nouvelle carte de Flow « Sélectionner le programme du thermostat [Temp 21] » (plannings ou Absent) : utilisée à la place de la carte du thermostat, elle permet à l'app de connaître le programme actif. Tant qu'aucun programme n'a été choisi via l'app, celui dont le nom correspond à la consigne est indiqué (en pointillés)."
+  },
+  "0.8.7": {
+    "en": "Homey does not let apps run other apps' cards (« Missing Scopes »): when the thermostat cannot be switched directly, the app raises the new triggers « Thermostat program [Temp 21] requested » and « A thermostat setpoint is requested », and a Flow applies them with the thermostat's own cards.",
+    "fr": "Homey ne permet pas aux apps d'exécuter les cartes d'autres apps (« Missing Scopes ») : quand le thermostat ne peut pas être commuté directement, l'app déclenche les nouvelles cartes « Programme du thermostat [Temp 21] demandé » et « Une consigne du thermostat est demandée », et un Flow les applique avec les cartes du thermostat."
   }
 }

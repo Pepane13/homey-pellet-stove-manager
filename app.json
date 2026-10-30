@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.pepane13.pelletstove",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "compatibility": ">=12.1.0",
   "sdk": 3,
   "platforms": [
@@ -676,6 +676,76 @@
               "en": "stove unreachable",
               "fr": "poêle injoignable"
             }
+          }
+        ],
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "thermostat_program_requested",
+        "title": {
+          "en": "A thermostat program is requested",
+          "fr": "Un programme du thermostat est demandé"
+        },
+        "titleFormatted": {
+          "en": "Thermostat program [[program]] requested",
+          "fr": "Programme du thermostat [[program]] demandé"
+        },
+        "hint": {
+          "en": "Raised by the widget or the app when Homey does not let it switch the thermostat itself: add the thermostat's own cards (mode, schedule) after this trigger.",
+          "fr": "Déclenché par le widget ou l'app quand Homey ne lui permet pas de commuter le thermostat elle-même : ajoutez après ce déclencheur les cartes du thermostat (mode, planning)."
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          },
+          {
+            "type": "autocomplete",
+            "name": "program",
+            "placeholder": {
+              "en": "Program",
+              "fr": "Programme"
+            }
+          }
+        ],
+        "tokens": [
+          {
+            "name": "program",
+            "type": "string",
+            "title": {
+              "en": "Program",
+              "fr": "Programme"
+            },
+            "example": "Temp 21"
+          }
+        ]
+      },
+      {
+        "id": "thermostat_setpoint_requested",
+        "title": {
+          "en": "A thermostat setpoint is requested",
+          "fr": "Une consigne du thermostat est demandée"
+        },
+        "hint": {
+          "en": "Raised by the widget when Homey does not let the app change the thermostat setpoint: set the thermostat to the « temperature » tag.",
+          "fr": "Déclenché par le widget quand Homey ne permet pas à l'app de changer la consigne : réglez le thermostat sur la balise « température »."
+        },
+        "tokens": [
+          {
+            "name": "temperature",
+            "type": "number",
+            "title": {
+              "en": "Temperature",
+              "fr": "Température"
+            },
+            "example": 21
           }
         ],
         "args": [

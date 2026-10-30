@@ -244,6 +244,7 @@
   },
   "widget": {
     "no_thermostat": "Aucun thermostat : choisissez la sonde du thermostat dans les réglages de l'app.",
-    "away": "Absent"
+    "away": "Absent",
+    "schedule": "Programme"
   }
 }

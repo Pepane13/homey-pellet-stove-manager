@@ -159,7 +159,7 @@
           clearTimeout(ctlState.timer); ctlState.pending = null;
           box.querySelectorAll('.chips button').forEach(function (x) { x.classList.remove('on'); });
           b.classList.add('on', 'busy');
-          Homey.api('POST', '/program', { id: b.getAttribute('data-id') }).then(reload).catch(function (err) {
+          Homey.api('POST', '/program', { id: b.getAttribute('data-id') }).then(function () { reload(); setTimeout(reload, 4000); }).catch(function (err) {
             b.classList.remove('busy');
             document.getElementById('ctlMode').textContent = (err && err.message) || String(err);
           });
@@ -176,7 +176,7 @@
         ctlState.timer = setTimeout(function () {
           document.getElementById('ctlMode').textContent = t.sending;
           Homey.api('POST', '/target', { value: v }).then(function () {
-            ctlState.pending = null; reload();
+            ctlState.pending = null; reload(); setTimeout(reload, 4000);
           }).catch(function (err) {
             ctlState.pending = null; document.getElementById('ctlMode').textContent = (err && err.message) || String(err);
           });
@@ -188,7 +188,7 @@
       if (sch) sch.onclick = function () {
         clearTimeout(ctlState.timer); ctlState.pending = null;
         document.getElementById('ctlMode').textContent = t.sending;
-        Homey.api('POST', '/schedule', {}).then(reload).catch(function (err) {
+        Homey.api('POST', '/schedule', {}).then(function () { reload(); setTimeout(reload, 4000); }).catch(function (err) {
           document.getElementById('ctlMode').textContent = (err && err.message) || String(err);
         });
       };

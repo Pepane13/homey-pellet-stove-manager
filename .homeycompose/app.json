@@ -1,6 +1,6 @@
 {
   "id": "com.pepane13.pelletstove",
-  "version": "0.8.6",
+  "version": "0.8.7",
   "compatibility": ">=12.1.0",
   "sdk": 3,
   "platforms": [

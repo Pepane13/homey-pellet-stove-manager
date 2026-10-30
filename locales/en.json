@@ -244,6 +244,7 @@
   },
   "widget": {
     "no_thermostat": "No thermostat: choose the thermostat sensor in the app settings.",
-    "away": "Away"
+    "away": "Away",
+    "schedule": "Schedule"
   }
 }

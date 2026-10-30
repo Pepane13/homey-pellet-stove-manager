@@ -138,8 +138,8 @@ class PelletStoveApp extends Homey.App {
 
   async _backToSchedule(cfg, reason) {
     try {
-      await this.devicesApi.runDeviceAction(cfg.thermostatId, 'thermostat_set_mode', { mode: 'schedule' });
-      this.log(`Thermostat back to its schedule (${reason})`);
+      const via = await this._runOrRequest(cfg.thermostatId, 'thermostat_set_mode', { mode: 'schedule' }, { id: 'schedule', name: this.homey.__('widget.schedule') });
+      this.log(`Thermostat back to its schedule (${reason}, ${via})`);
     } catch (err) {
       this.error('Thermostat schedule failed:', err.message);
     }
@@ -172,7 +172,12 @@ class PelletStoveApp extends Homey.App {
     for (const a of actions) {
       this.log(`Regulation: ${a.type} ${a.value ?? a.on ?? a.level ?? ''} (${a.reason || ''})`);
       try {
-        if (a.type === 'setpoint') await this.devicesApi.setCapability(cfg.thermostatId, 'target_temperature', a.value);
+        if (a.type === 'setpoint') {
+          await this.devicesApi.setCapability(cfg.thermostatId, 'target_temperature', a.value).catch((err) => {
+            if (!this._scopeError(err)) throw err;
+            this.emit('thermostat_setpoint_request', { temperature: a.value });
+          });
+        }
         else if (a.type === 'schedule') {
           await this._backToSchedule(cfg, a.reason);
           this.emit('regulation_fallback', { reason: a.reason });
@@ -354,7 +359,14 @@ class PelletStoveApp extends Homey.App {
     }
     const id = this._thermostatId();
     if (!id) throw new Error(this.homey.__('widget.no_thermostat'));
-    await this.devicesApi.setCapability(id, 'target_temperature', v);
+    try {
+      await this.devicesApi.setCapability(id, 'target_temperature', v);
+    } catch (err) {
+      if (!this._scopeError(err)) throw err;
+      this.emit('thermostat_setpoint_request', { temperature: v });
+      this.log(`Thermostat setpoint ${v} °C requested from Flows (no device control for apps)`);
+      return { target: v, via: 'flow' };
+    }
     this.log(`Manual thermostat setpoint ${v} °C (widget)`);
     return { target: v };
   }
@@ -377,6 +389,39 @@ class PelletStoveApp extends Homey.App {
   }
 
   /**
+   * Homey does not let apps run other apps' Flow cards (« Missing Scopes »). When the thermostat's
+   * own card cannot be run, the mode is tried through its capability, and otherwise the app raises
+   * the trigger « Thermostat program requested [program] » so that a Flow applies it.
+   */
+  _scopeError(err) {
+    return /scope|forbidden|permission/i.test(String(err && err.message));
+  }
+
+  async _runOrRequest(id, card, args, request) {
+    try {
+      await this.devicesApi.runDeviceAction(id, card, args);
+      return 'direct';
+    } catch (err) {
+      if (!this._scopeError(err)) throw err;
+      if (card === 'thermostat_set_mode') {
+        try {
+          const d = await this.devicesApi.readDevice(id);
+          const modeCap = Object.keys(d.capabilitiesObj || {}).find((k) => k.endsWith('thermostat_mode'));
+          if (modeCap && d.capabilitiesObj[modeCap].setable !== false) {
+            await this.devicesApi.setCapability(id, modeCap, args.mode);
+            return 'capability';
+          }
+        } catch (err2) {
+          this.log(`Thermostat mode capability not usable: ${err2.message}`);
+        }
+      }
+      this.log(`Thermostat card ${card} not allowed for apps: Flow request ${request.id}`);
+      this.emit('thermostat_request', request);
+      return 'flow';
+    }
+  }
+
+  /**
    * Select a thermostat program (schedule) or « away », from the widget or the Flow card
    * « Select the thermostat program ». The app remembers it so that the widget shows the
    * active program (the thermostat does not expose it). Stops any hold.
@@ -386,17 +431,23 @@ class PelletStoveApp extends Homey.App {
     if (!id) throw new Error(this.homey.__('widget.no_thermostat'));
     if (this.regulator.hold()) this.regulator.clearHold();
     if (programId === 'away') {
-      await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'away' });
-      this.log('Thermostat away');
-      return true;
+      const via = await this._runOrRequest(id, 'thermostat_set_mode', { mode: 'away' }, { id: 'away', name: this.homey.__('widget.away') });
+      this.log(`Thermostat away (${via})`);
+      return { via };
     }
     const program = (await this.thermostatPrograms()).find((p) => p.id === String(programId));
     if (!program) throw new Error(`Unknown program ${programId}`);
-    await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'schedule' });
-    await this.devicesApi.runDeviceAction(id, 'thermostat_set_schedule', { schedule: program });
+    let via = await this._runOrRequest(id, 'thermostat_set_mode', { mode: 'schedule' }, { id: program.id, name: program.name });
+    if (via !== 'flow') via = await this._runOrRequest(id, 'thermostat_set_schedule', { schedule: program }, { id: program.id, name: program.name });
     this.homey.settings.set('widget_program', { thermostat: id, id: program.id, at: Date.now() });
-    this.log(`Thermostat program ${program.name}`);
-    return true;
+    this.log(`Thermostat program ${program.name} (${via})`);
+    return { via };
+  }
+
+  /** Remembers a program applied by a Flow with the thermostat's own card (Flow card of this app). */
+  noteProgram(programId) {
+    const id = this._thermostatId();
+    if (id && programId) this.homey.settings.set('widget_program', { thermostat: id, id: String(programId), at: Date.now() });
   }
 
   /** « Schedule » button of the widget: stops any hold and puts the thermostat back on its schedule. */
@@ -404,9 +455,12 @@ class PelletStoveApp extends Homey.App {
     if (this.regulator.hold()) this.regulator.clearHold();
     const id = this._thermostatId();
     if (!id) throw new Error(this.homey.__('widget.no_thermostat'));
-    await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'schedule' });
-    this.log('Thermostat back to its schedule (widget)');
-    return true;
+    const saved = this.homey.settings.get('widget_program') || {};
+    const program = saved.id && (await this.thermostatPrograms()).find((p) => p.id === saved.id);
+    const request = program ? { id: program.id, name: program.name } : { id: 'schedule', name: this.homey.__('widget.schedule') };
+    const via = await this._runOrRequest(id, 'thermostat_set_mode', { mode: 'schedule' }, request);
+    this.log(`Thermostat back to its schedule (${via})`);
+    return { via };
   }
 
   /**

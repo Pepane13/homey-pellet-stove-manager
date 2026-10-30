@@ -66,6 +66,12 @@ class StoveDevice extends Homey.Device {
     this.homey.app.on('consumable_event', this._onConsumableEvent);
     this._onFallback = (e) => this.homey.flow.getDeviceTriggerCard('regulation_fallback').trigger(this, e).catch(this.error);
     this.homey.app.on('regulation_fallback', this._onFallback);
+    this._onThermostatRequest = (r) => this.homey.flow.getDeviceTriggerCard('thermostat_program_requested')
+      .trigger(this, { program: r.name }, { id: r.id }).catch(this.error);
+    this._onSetpointRequest = (r) => this.homey.flow.getDeviceTriggerCard('thermostat_setpoint_requested')
+      .trigger(this, { temperature: r.temperature }).catch(this.error);
+    this.homey.app.on('thermostat_request', this._onThermostatRequest);
+    this.homey.app.on('thermostat_setpoint_request', this._onSetpointRequest);
     this._applyConsumables(this.homey.app.consumables.summary()).catch(this.error);
 
     this.homey.app.registerStove(this);
@@ -305,6 +311,8 @@ class StoveDevice extends Homey.Device {
     if (this._onConsumables) this.homey.app.off('consumables', this._onConsumables);
     if (this._onConsumableEvent) this.homey.app.off('consumable_event', this._onConsumableEvent);
     if (this._onFallback) this.homey.app.off('regulation_fallback', this._onFallback);
+    if (this._onThermostatRequest) this.homey.app.off('thermostat_request', this._onThermostatRequest);
+    if (this._onSetpointRequest) this.homey.app.off('thermostat_setpoint_request', this._onSetpointRequest);
     this.homey.clearTimeout(this.pollTimer);
     if (this.connection) this.connection.close();
   }
