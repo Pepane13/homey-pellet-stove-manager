@@ -62,5 +62,9 @@
   "0.8.1": {
     "en": "Widget: the indoor temperature shown on the thermostat card is no longer repeated above it.",
     "fr": "Widget : la température intérieure affichée sur la carte thermostat n'est plus répétée au-dessus."
+  },
+  "0.8.2": {
+    "en": "Widget: the thermostat card is at the top.",
+    "fr": "Widget : la carte thermostat est placée en haut."
   }
 }

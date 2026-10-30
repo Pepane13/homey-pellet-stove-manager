@@ -26,7 +26,7 @@
     .line .v { font-variant-numeric: tabular-nums; text-align: right; }
     .ko { color: var(--ko); }
     .hint { font-size: 11px; color: var(--homey-text-color-light, #777); margin-top: 4px; }
-    .ctl { display: flex; align-items: stretch; margin: 10px 0 6px; border-radius: 16px; background: var(--homey-background-color, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.08); border: 1px solid var(--homey-line-color, rgba(0,0,0,.06)); overflow: hidden; }
+    .ctl { display: flex; align-items: stretch; margin: 2px 0 12px; border-radius: 16px; background: var(--homey-background-color, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.08); border: 1px solid var(--homey-line-color, rgba(0,0,0,.06)); overflow: hidden; }
     .ctl .main { flex: 1; display: flex; align-items: center; gap: 12px; padding: 10px 12px; min-width: 0; }
     .ctl .ico { position: relative; width: 40px; height: 40px; flex: none; }
     .ctl .ico svg.dial { width: 40px; height: 40px; }
@@ -49,7 +49,7 @@
   </style>
 </head>
 <body class="homey-widget">
-  <div class="w"><div id="w"><div class="sub">…</div></div><div id="ctl"></div></div>
+  <div class="w"><div id="ctl"></div><div id="w"><div class="sub">…</div></div></div>
   <script type="text/javascript">
     var T = {
       fr: { comfort: 'Séjour', thermostat: 'Thermostat', outdoor: 'Extérieur', power: 'Puissance', pellets: 'Granulés', empty: 'vide vers',
