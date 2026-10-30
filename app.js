@@ -394,6 +394,7 @@ class PelletStoveApp extends Homey.App {
       thermostat: await this._thermostatState(),
       pellets: {
         kgLeft: c.pellets.kgLeft, percent: c.pellets.percent, emptyAt: c.pellets.emptyAt, low: c.pellets.kgLeft <= c.config.lowKg,
+        power: c.pellets.power, hoursAtCurrentPower: c.pellets.hoursAtCurrentPower,
       },
       month: {
         kg: c.month.kg, cost: c.month.cost, bags: c.month.bags, forecast: c.month.forecast ? c.month.forecast.bags : null,

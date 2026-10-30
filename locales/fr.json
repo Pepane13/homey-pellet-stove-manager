@@ -203,7 +203,13 @@
     "tab_sensors": "Sondes",
     "tab_heating": "Chauffe",
     "tab_service": "Entretien",
-    "tab_house": "Maison"
+    "tab_house": "Maison",
+    "co_now_power": "À la puissance actuelle (P{p}, {rate} kg/h)",
+    "co_hours_left": "vide dans {h} h",
+    "co_daily": "Besoin estimé (température actuelle)",
+    "co_day": "jour",
+    "co_model": "Consommation apprise (puissances utilisées)",
+    "co_days": "jours"
   },
   "sensor_role": {
     "comfort": "Sonde de confort",

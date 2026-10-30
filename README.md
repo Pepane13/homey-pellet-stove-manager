@@ -73,7 +73,7 @@ the date of insulation works. Resetting the learning keeps this curve.
 Consumption is integrated from the power level (0.95 kg/h at P1 to 2.33 kg/h at P5, times a factor learnt
 only when the tank really runs empty, error 5). Flow cards: « Tank refilled » (full tank, 19 kg), bag price,
 « Cleaning done », « Professional maintenance done »; triggers for low pellets, evening refill advice,
-monthly bag forecast (1st of the month), cleaning soon/due, maintenance soon/due (12 months or 1,200 h)
+monthly bag forecast (1st of the month; the daily need is learnt from the power levels actually used, day by day, against the outdoor temperature), cleaning soon/due, maintenance soon/due (12 months or 1,200 h)
 and the mid-season chimney sweeping reminder. The settings page shows the counters and the service journal.
 
 ## Regulation and commands (0.5)

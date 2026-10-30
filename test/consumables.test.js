@@ -148,3 +148,32 @@ test('a refill with the level seen learns the factor; the level at installation 
   c.setLevel(40);
   assert.strictEqual(c.pelletState().percent, 40);
 });
+
+test('learns the daily need from the power levels used and gives the time left at the current power', () => {
+  const mem = {};
+  const clock = { t: Date.parse('2026-11-02T00:00:30Z') };
+  const { Consumables, kgPerDay } = require('../lib/consumables');
+  const c = new Consumables({ store: { get: (k) => mem[k], set: (k, v) => { mem[k] = v; } }, now: () => clock.t, timeZone: () => 'UTC' });
+  // 6 days at 8 °C, 10 h a day at P4 (model rate 1.985 kg/h → 19.85 kg/day, prior ≈ 8.6 kg/day)
+  for (let day = 0; day < 6; day++) {
+    for (let m = 0; m < 1440; m++) {
+      const burning = m >= 360 && m < 960;
+      c.observe({ t: clock.t, status: burning ? 'heating' : 'off', power: 4, errorCode: 0 });
+      c.tick(8);
+      clock.t += 60e3;
+    }
+  }
+  c.tick(8); // closes the last day
+  const model = c.dailyModel();
+  assert.ok(model.days >= 5, `days ${model.days}`);
+  assert.ok(model.scale > 1.5, `scale ${model.scale}`);
+  assert.strictEqual(model.powerMix['4'], 100);
+  const need = c.dailyNeed(8);
+  assert.ok(need > kgPerDay(8) * 1.5 && need < 19.85 * 1.05, `need ${need}`);
+  c.refilled();
+  c.observe({ t: clock.t, status: 'heating', power: 2, errorCode: 0 });
+  const st = c.pelletState(8);
+  assert.strictEqual(st.hoursAtCurrentPower, Math.round((19 / (0.95 + 0.345)) * 10) / 10);
+  assert.strictEqual(st.power, 2);
+  assert.ok(st.hoursAtCurrentPower > 0);
+});

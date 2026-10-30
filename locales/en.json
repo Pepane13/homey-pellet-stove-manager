@@ -203,7 +203,13 @@
     "tab_sensors": "Sensors",
     "tab_heating": "Heating",
     "tab_service": "Maintenance",
-    "tab_house": "House"
+    "tab_house": "House",
+    "co_now_power": "At the current power (P{p}, {rate} kg/h)",
+    "co_hours_left": "empty in {h} h",
+    "co_daily": "Estimated need (current temperature)",
+    "co_day": "day",
+    "co_model": "Learnt consumption (power levels used)",
+    "co_days": "days"
   },
   "sensor_role": {
     "comfort": "Comfort sensor",

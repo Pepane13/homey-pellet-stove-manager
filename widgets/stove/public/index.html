@@ -54,10 +54,10 @@
     var T = {
       fr: { comfort: 'Séjour', thermostat: 'Thermostat', outdoor: 'Extérieur', power: 'Puissance', pellets: 'Granulés', empty: 'vide vers',
         month: 'Ce mois', forecast: 'prévu', bags: 'sacs', cleaning: 'Nettoyage', service: 'Entretien', hold: 'Maintien', unreachable: 'Poêle injoignable', none: 'Aucun poêle',
-        tgtThermostat: 'Consigne thermostat', tgtLiving: 'Consigne séjour', schedule: 'Programme', mSchedule: 'programme', mManual: 'manuel', mAway: 'absent', mHold: 'maintien', mFrost: 'hors-gel', sending: 'envoi…' },
+        tgtThermostat: 'Consigne thermostat', tgtLiving: 'Consigne séjour', schedule: 'Programme', mSchedule: 'programme', mManual: 'manuel', mAway: 'absent', mHold: 'maintien', mFrost: 'hors-gel', sending: 'envoi…', atPower: 'à P{p} : {h} h' },
       en: { comfort: 'Living room', thermostat: 'Thermostat', outdoor: 'Outdoor', power: 'Power', pellets: 'Pellets', empty: 'empty around',
         month: 'This month', forecast: 'forecast', bags: 'bags', cleaning: 'Cleaning', service: 'Service', hold: 'Holding', unreachable: 'Stove unreachable', none: 'No stove',
-        tgtThermostat: 'Thermostat setpoint', tgtLiving: 'Living room target', schedule: 'Schedule', mSchedule: 'schedule', mManual: 'manual', mAway: 'away', mHold: 'holding', mFrost: 'frost guard', sending: 'sending…' }
+        tgtThermostat: 'Thermostat setpoint', tgtLiving: 'Living room target', schedule: 'Schedule', mSchedule: 'schedule', mManual: 'manual', mAway: 'away', mHold: 'holding', mFrost: 'frost guard', sending: 'sending…', atPower: 'at P{p}: {h} h' }
     };
     var FLAME = '<svg viewBox="0 0 24 24"><path d="M13.5 1.7s.7 2.6.7 4.7c0 2-1.3 3.6-3.3 3.6S7.6 8.4 7.6 6.4l.03-.36C5.6 8.5 4.4 11.6 4.4 15c0 4.4 3.6 8 8 8s8-3.6 8-8C20.4 9.6 17.8 4.8 13.5 1.7zM12.1 20c-1.8 0-3.2-1.4-3.2-3.1 0-1.6 1-2.8 2.8-3.1 1.8-.4 3.6-1.2 4.6-2.6.4 1.3.6 2.6.6 4 0 2.7-2.1 4.8-4.8 4.8z"/></svg>';
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -89,7 +89,10 @@
       var p = d.pellets;
       html += '<div class="line"><span>' + t.pellets + '</span><span class="v ' + (p.low ? 'ko' : '') + '">' + esc(p.kgLeft) + ' kg · ' + esc(p.percent) + ' %</span></div>';
       html += '<div class="bar ' + (p.low ? 'low' : '') + '"><i style="width:' + Math.max(0, Math.min(100, p.percent)) + '%"></i></div>';
-      if (p.emptyAt) html += '<div class="hint">' + t.empty + ' ' + esc(dhm(p.emptyAt)) + '</div>';
+      var hints = [];
+      if (p.hoursAtCurrentPower != null) hints.push(t.atPower.replace('{p}', p.power).replace('{h}', p.hoursAtCurrentPower));
+      if (p.emptyAt) hints.push(t.empty + ' ' + dhm(p.emptyAt));
+      if (hints.length) html += '<div class="hint">' + esc(hints.join(' · ')) + '</div>';
       if (!settings || settings.show_month !== false) {
         html += line(t.month, d.month.kg + ' kg · ' + d.month.cost + ' €' + (d.month.forecast != null ? ' · ' + t.forecast + ' ' + d.month.forecast + ' ' + t.bags : ''));
       }
