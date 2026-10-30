@@ -26,16 +26,38 @@
     .line .v { font-variant-numeric: tabular-nums; text-align: right; }
     .ko { color: var(--ko); }
     .hint { font-size: 11px; color: var(--homey-text-color-light, #777); margin-top: 4px; }
+    .ctl { display: flex; align-items: stretch; margin: 10px 0 6px; border-radius: 16px; background: var(--homey-background-color, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.08); border: 1px solid var(--homey-line-color, rgba(0,0,0,.06)); overflow: hidden; }
+    .ctl .main { flex: 1; display: flex; align-items: center; gap: 12px; padding: 10px 12px; min-width: 0; }
+    .ctl .ico { position: relative; width: 40px; height: 40px; flex: none; }
+    .ctl .ico svg.dial { width: 40px; height: 40px; }
+    .ctl .badge { position: absolute; right: -4px; bottom: -4px; width: 18px; height: 18px; border-radius: 50%; background: #9aa0a6; display: flex; align-items: center; justify-content: center; border: 2px solid var(--homey-background-color, #fff); }
+    .ctl .badge.up { background: var(--accent); }
+    .ctl .badge svg { width: 10px; height: 10px; fill: #fff; }
+    .ctl .txt { min-width: 0; }
+    .ctl .name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .ctl .name small { font-weight: 400; font-size: 11px; color: var(--homey-text-color-light, #777); margin-left: 4px; }
+    .ctl .temps2 { display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
+    .ctl .cur { font-size: 20px; font-weight: 600; color: var(--homey-text-color-light, #888); }
+    .ctl .arrow { font-size: 16px; color: var(--homey-text-color-light, #888); }
+    .ctl .tgt { font-size: 22px; font-weight: 700; }
+    .ctl .tgt.pending { color: var(--accent); }
+    .ctl .sch { font-size: 11px; color: var(--accent); background: none; border: 0; padding: 2px 0 0; cursor: pointer; }
+    .ctl .btns { display: flex; flex-direction: column; border-left: 1px solid var(--homey-line-color, rgba(0,0,0,.08)); width: 48px; flex: none; }
+    .ctl .btns button { flex: 1; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--homey-text-color, #222); }
+    .ctl .btns button + button { border-top: 1px solid var(--homey-line-color, rgba(0,0,0,.08)); }
+    .ctl .btns svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   </style>
 </head>
 <body class="homey-widget">
-  <div class="w" id="w"><div class="sub" id="loading">…</div></div>
+  <div class="w"><div id="w"><div class="sub">…</div></div><div id="ctl"></div></div>
   <script type="text/javascript">
     var T = {
       fr: { comfort: 'Séjour', thermostat: 'Thermostat', outdoor: 'Extérieur', power: 'Puissance', pellets: 'Granulés', empty: 'vide vers',
-        month: 'Ce mois', forecast: 'prévu', bags: 'sacs', cleaning: 'Nettoyage', service: 'Entretien', hold: 'Maintien', unreachable: 'Poêle injoignable', none: 'Aucun poêle' },
+        month: 'Ce mois', forecast: 'prévu', bags: 'sacs', cleaning: 'Nettoyage', service: 'Entretien', hold: 'Maintien', unreachable: 'Poêle injoignable', none: 'Aucun poêle',
+        tgtThermostat: 'Consigne thermostat', tgtLiving: 'Consigne séjour', schedule: 'Programme', mSchedule: 'programme', mManual: 'manuel', mAway: 'absent', mHold: 'maintien', mFrost: 'hors-gel', sending: 'envoi…' },
       en: { comfort: 'Living room', thermostat: 'Thermostat', outdoor: 'Outdoor', power: 'Power', pellets: 'Pellets', empty: 'empty around',
-        month: 'This month', forecast: 'forecast', bags: 'bags', cleaning: 'Cleaning', service: 'Service', hold: 'Holding', unreachable: 'Stove unreachable', none: 'No stove' }
+        month: 'This month', forecast: 'forecast', bags: 'bags', cleaning: 'Cleaning', service: 'Service', hold: 'Holding', unreachable: 'Stove unreachable', none: 'No stove',
+        tgtThermostat: 'Thermostat setpoint', tgtLiving: 'Living room target', schedule: 'Schedule', mSchedule: 'schedule', mManual: 'manual', mAway: 'away', mHold: 'holding', mFrost: 'frost guard', sending: 'sending…' }
     };
     var FLAME = '<svg viewBox="0 0 24 24"><path d="M13.5 1.7s.7 2.6.7 4.7c0 2-1.3 3.6-3.3 3.6S7.6 8.4 7.6 6.4l.03-.36C5.6 8.5 4.4 11.6 4.4 15c0 4.4 3.6 8 8 8s8-3.6 8-8C20.4 9.6 17.8 4.8 13.5 1.7zM12.1 20c-1.8 0-3.2-1.4-3.2-3.1 0-1.6 1-2.8 2.8-3.1 1.8-.4 3.6-1.2 4.6-2.6.4 1.3.6 2.6.6 4 0 2.7-2.1 4.8-4.8 4.8z"/></svg>';
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -68,12 +90,71 @@
       html += line(t.service, (x.length === 3 ? x[2] + '/' + x[1] + '/' + x[0] : '—') + (d.service.hoursLeft != null ? ' · ' + d.service.hoursLeft + ' h' : ''), d.service.due ? 'ko' : '');
       document.getElementById('w').innerHTML = html;
     }
+    var ctlState = { pending: null, timer: null, data: null };
+    function modeText(t, d) {
+      if (d.hold && d.regulationMode !== 'flows') return t.mHold + ' ' + d.hold.target + ' °C';
+      var m = d.thermostat && d.thermostat.mode;
+      return m === 'schedule' ? t.mSchedule : m === 'manual' ? t.mManual : m === 'away' ? t.mAway : m === 'hg' || m === 'frost_guard' ? t.mFrost : (m || '');
+    }
+    var DIAL = '<svg class="dial" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="20" cy="20" r="12.5" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
+      '<path d="M20.6 13.8s.4 1.5.4 2.6c0 1.1-.7 2-1.8 2s-1.8-.9-1.8-2v-.2c-1.1 1.4-1.8 3.1-1.8 5 0 2.4 2 4.4 4.4 4.4s4.4-2 4.4-4.4c0-3-1.4-5.6-3.8-7.4z" fill="currentColor"/></svg>';
+    var DOWN = '<svg viewBox="0 0 10 10"><path d="M5 9 1.5 5.2h2.3V1h2.4v4.2h2.3z"/></svg>';
+    var UP = '<svg viewBox="0 0 10 10"><path d="M5 1 8.5 4.8H6.2V9H3.8V4.8H1.5z"/></svg>';
+    var CHEV_UP = '<svg viewBox="0 0 16 16"><path d="M3 10.5 8 5.5l5 5"/></svg>';
+    var CHEV_DOWN = '<svg viewBox="0 0 16 16"><path d="M3 5.5 8 10.5l5-5"/></svg>';
+    function renderControls(d, settings, Homey, reload) {
+      var box = document.getElementById('ctl');
+      if (!d.thermostat || (settings && settings.show_controls === false)) { box.innerHTML = ''; return; }
+      var t = T[d.lang] || T.en;
+      var th = d.thermostat;
+      var living = d.regulationMode !== 'flows';
+      var cur = living ? d.comfort : (th.current != null ? th.current : d.regulation);
+      var target = living && d.hold ? d.hold.target : th.target;
+      var shown = ctlState.pending != null ? ctlState.pending : target;
+      var fmt = function (v) { return v == null ? '—' : (Math.round(v * 10) / 10).toFixed(1) + '°'; };
+      var heatingUp = cur != null && shown != null && shown > cur;
+      var notSchedule = (living && d.hold) || (th.mode && th.mode !== 'schedule');
+      box.innerHTML = '<div class="ctl"><div class="main"><div class="ico">' + DIAL + '<span class="badge ' + (heatingUp ? 'up' : '') + '">' + (heatingUp ? UP : DOWN) + '</span></div>' +
+        '<div class="txt"><div class="name">' + esc(th.name) + '<small id="ctlMode">' + esc(modeText(t, d)) + '</small></div>' +
+        '<div class="temps2"><span class="cur">' + fmt(cur) + '</span><span class="arrow">→</span><span class="tgt' + (ctlState.pending != null ? ' pending' : '') + '" id="ctlVal">' + fmt(shown) + '</span></div>' +
+        (notSchedule ? '<button class="sch" id="ctlSch">↺ ' + esc(t.schedule) + '</button>' : '') + '</div></div>' +
+        '<div class="btns"><button id="ctlPlus" aria-label="+">' + CHEV_UP + '</button><button id="ctlMinus" aria-label="-">' + CHEV_DOWN + '</button></div></div>';
+      var step = th.step || 0.5;
+      var bump = function (delta) {
+        var base = ctlState.pending != null ? ctlState.pending : (target != null ? target : 20);
+        var v = Math.min(th.max || 30, Math.max(th.min || 7, Math.round((base + delta) / step) * step));
+        ctlState.pending = v;
+        var el = document.getElementById('ctlVal');
+        el.textContent = fmt(v); el.className = 'tgt pending';
+        clearTimeout(ctlState.timer);
+        ctlState.timer = setTimeout(function () {
+          document.getElementById('ctlMode').textContent = t.sending;
+          Homey.api('POST', '/target', { value: v }).then(function () {
+            ctlState.pending = null; reload();
+          }).catch(function (err) {
+            ctlState.pending = null; document.getElementById('ctlMode').textContent = (err && err.message) || String(err);
+          });
+        }, 1200);
+      };
+      document.getElementById('ctlMinus').onclick = function () { bump(-step); };
+      document.getElementById('ctlPlus').onclick = function () { bump(step); };
+      var sch = document.getElementById('ctlSch');
+      if (sch) sch.onclick = function () {
+        clearTimeout(ctlState.timer); ctlState.pending = null;
+        document.getElementById('ctlMode').textContent = t.sending;
+        Homey.api('POST', '/schedule', {}).then(reload).catch(function (err) {
+          document.getElementById('ctlMode').textContent = (err && err.message) || String(err);
+        });
+      };
+    }
+
     function onHomeyReady(Homey) {
       var settings = Homey.getSettings ? Homey.getSettings() : {};
       var first = true;
       function load() {
         Homey.api('GET', '/', {}).then(function (d) {
           render(d, settings);
+          if (ctlState.pending == null) renderControls(d, settings, Homey, load);
           if (first) { first = false; Homey.ready({ height: document.body.scrollHeight + 4 }); }
         }).catch(function (err) {
           document.getElementById('w').innerHTML = '<div class="sub ko">' + esc(err && err.message || err) + '</div>';

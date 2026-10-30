@@ -308,6 +308,67 @@ class PelletStoveApp extends Homey.App {
     return c.summary(this.sensors.state ? this.sensors.state.outdoor : null);
   }
 
+  /** Thermostat driven by the widget: the one of the regulation settings, else the thermostat sensor device. */
+  _thermostatId() {
+    const cfg = this.regulator.config();
+    if (cfg.thermostatId) return cfg.thermostatId;
+    const sensors = this.homey.settings.get('sensors') || {};
+    return sensors.regulation && sensors.regulation.deviceId ? sensors.regulation.deviceId : null;
+  }
+
+  async _thermostatState() {
+    const id = this._thermostatId();
+    if (!id) return null;
+    try {
+      const d = await this.devicesApi.readDevice(id);
+      const caps = d.capabilitiesObj || {};
+      if (!caps.target_temperature) return null;
+      const modeCap = Object.keys(caps).find((k) => k.endsWith('thermostat_mode'));
+      const t = caps.target_temperature;
+      return {
+        name: d.name,
+        target: t.value,
+        current: caps.measure_temperature ? caps.measure_temperature.value : null,
+        min: typeof t.min === 'number' ? t.min : 7,
+        max: typeof t.max === 'number' ? t.max : 30,
+        step: typeof t.step === 'number' ? t.step : 0.5,
+        mode: modeCap ? caps[modeCap].value : null,
+      };
+    } catch (err) {
+      this.error('Thermostat read failed:', err.message);
+      return null;
+    }
+  }
+
+  /**
+   * Manual target from the widget. With the netatmo/direct regulation it becomes the held
+   * living-room temperature; in Flows mode it is written to the thermostat (manual setpoint).
+   */
+  async setManualTarget(value) {
+    const v = Math.round(Number(value) * 2) / 2;
+    if (!(v >= 5 && v <= 30)) throw new Error(`Invalid temperature: ${value}`);
+    const cfg = this.regulator.config();
+    if (cfg.mode !== 'flows' && cfg.thermostatId) {
+      await this.setHold(v);
+      return { held: v };
+    }
+    const id = this._thermostatId();
+    if (!id) throw new Error(this.homey.__('widget.no_thermostat'));
+    await this.devicesApi.setCapability(id, 'target_temperature', v);
+    this.log(`Manual thermostat setpoint ${v} °C (widget)`);
+    return { target: v };
+  }
+
+  /** « Schedule » button of the widget: stops any hold and puts the thermostat back on its schedule. */
+  async resumeSchedule() {
+    if (this.regulator.hold()) this.regulator.clearHold();
+    const id = this._thermostatId();
+    if (!id) throw new Error(this.homey.__('widget.no_thermostat'));
+    await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'schedule' });
+    this.log('Thermostat back to its schedule (widget)');
+    return true;
+  }
+
   /** Main stove values for the dashboard widget. */
   async getWidgetData() {
     const stove = this.stove();
@@ -329,6 +390,8 @@ class PelletStoveApp extends Homey.App {
       outdoor: st.outdoor ?? null,
       startText: cap('stove_start_time'),
       hold: this.regulator.hold(),
+      regulationMode: this.regulator.config().mode,
+      thermostat: await this._thermostatState(),
       pellets: {
         kgLeft: c.pellets.kgLeft, percent: c.pellets.percent, emptyAt: c.pellets.emptyAt, low: c.pellets.kgLeft <= c.config.lowKg,
       },

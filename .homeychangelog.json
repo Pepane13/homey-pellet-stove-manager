@@ -54,5 +54,9 @@
   "0.7.2": {
     "en": "Settings page split into tabs (Status, Sensors, Heating, Maintenance, House), rarely used settings folded. Fix: the thermostat temperature was shown as « [object Object] » in the settings.",
     "fr": "Page de réglages organisée en onglets (État, Sondes, Chauffe, Entretien, Maison), réglages peu utilisés repliés. Correction : la température du thermostat s'affichait « [object Object] » dans les réglages."
+  },
+  "0.8.0": {
+    "en": "Widget: thermostat card with the current temperature, the target and ˄ ˅ buttons to change it (manual setpoint, or held living-room temperature with the Netatmo/direct regulation), plus « Schedule » to go back to the program.",
+    "fr": "Widget : carte thermostat avec la température actuelle, la consigne et des boutons ˄ ˅ pour la modifier (consigne manuelle, ou température maintenue au séjour avec la régulation Netatmo/directe), et « Programme » pour revenir au planning."
   }
 }

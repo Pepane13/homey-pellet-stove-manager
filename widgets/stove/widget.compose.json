@@ -3,7 +3,7 @@
     "en": "Pellet stove",
     "fr": "Poêle à granulés"
   },
-  "height": 300,
+  "height": 360,
   "settings": [
     {
       "id": "show_month",
@@ -13,12 +13,29 @@
         "fr": "Afficher la consommation du mois"
       },
       "value": true
+    },
+    {
+      "id": "show_controls",
+      "type": "checkbox",
+      "title": {
+        "en": "Show the target temperature controls",
+        "fr": "Afficher le réglage de la température cible"
+      },
+      "value": true
     }
   ],
   "api": {
     "getData": {
       "method": "GET",
       "path": "/"
+    },
+    "setTarget": {
+      "method": "POST",
+      "path": "/target"
+    },
+    "schedule": {
+      "method": "POST",
+      "path": "/schedule"
     }
   }
 }

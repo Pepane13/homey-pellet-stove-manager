@@ -235,5 +235,8 @@
   },
   "commands": {
     "disabled": "Commands to the stove are disabled (device settings)."
+  },
+  "widget": {
+    "no_thermostat": "No thermostat: choose the thermostat sensor in the app settings."
   }
 }
