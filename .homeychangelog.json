@@ -90,5 +90,9 @@
   "0.8.9": {
     "en": "Widget: « Pellets refilled » and « Stove cleaned » buttons (tap twice to confirm).",
     "fr": "Widget : boutons « Pellets rechargés » et « Poêle nettoyé » (deux appuis pour confirmer)."
+  },
+  "0.9.0": {
+    "en": "Widget redesigned with the Homey look: device-style header, large target temperature, segmented program selector, temperature tiles, light and dark mode.",
+    "fr": "Widget redessiné au style Homey : en-tête façon appareil, grande température cible, sélecteur de programme segmenté, tuiles de température, modes clair et sombre."
   }
 }

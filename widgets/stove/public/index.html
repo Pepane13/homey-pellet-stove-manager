@@ -3,111 +3,169 @@
 <head>
   <meta charset="utf-8">
   <style>
-    :root { --accent: #e8681a; --ok: #1f9d55; --ko: #dc2626; }
-    body { margin: 0; font-family: var(--homey-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif); }
-    .w { padding: var(--homey-su-2, 8px) var(--homey-su-3, 12px); font-size: 13px; color: var(--homey-text-color, #222); }
-    .top { display: flex; align-items: center; gap: 10px; }
-    .flame { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--homey-background-color-secondary, #f2f3f5); flex: none; }
-    .flame svg { width: 20px; height: 20px; fill: #9aa0a6; }
-    .on .flame { background: rgba(232, 104, 26, .15); }
-    .on .flame svg { fill: var(--accent); }
-    .alarm .flame { background: rgba(220, 38, 38, .15); }
-    .alarm .flame svg { fill: var(--ko); }
-    .st { font-weight: 600; font-size: 15px; }
-    .sub { color: var(--homey-text-color-light, #777); font-size: 12px; }
-    .temps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0 8px; text-align: center; }
-    .temps b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
-    .temps span { font-size: 11px; color: var(--homey-text-color-light, #777); }
-    .bar { height: 8px; border-radius: 4px; background: var(--homey-background-color-secondary, #eceef1); overflow: hidden; margin: 3px 0 2px; }
-    .bar i { display: block; height: 100%; background: var(--accent); border-radius: 4px; }
+    /* Homey look: Homey variables first (they follow light/dark mode), fallbacks only for previews */
+    .w {
+      --su: var(--homey-su, 4px);
+      --tile: var(--homey-color-mono-050, #f4f5f7);
+      --tile-2: var(--homey-color-mono-100, #e9ebef);
+      --line: var(--homey-line-color-light, rgba(0, 0, 0, .06));
+      --txt: var(--homey-text-color, #1c1c1e);
+      --txt-l: var(--homey-text-color-light, #8a8f98);
+      --bg: var(--homey-background-color, #fff);
+      --hl: var(--homey-color-highlight, #0078ff);
+      --hot: var(--homey-color-orange, #ff8c1a);
+      --ok: var(--homey-color-success, #2bb24c);
+      --ko: var(--homey-color-danger, #f2463a);
+      --r: var(--homey-border-radius-default, 10px);
+      --r-s: var(--homey-border-radius-small, 6px);
+      color: var(--txt);
+      font-size: var(--homey-font-size-default, 14px);
+      line-height: var(--homey-line-height-default, 20px);
+    }
+    body { margin: 0; font-family: var(--homey-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif); -webkit-tap-highlight-color: transparent; }
+    button { font: inherit; color: inherit; -webkit-appearance: none; appearance: none; }
+    svg { display: block; }
+    .light { color: var(--txt-l); }
+    .small { font-size: var(--homey-font-size-small, 12px); line-height: var(--homey-line-height-small, 16px); }
+    .num { font-variant-numeric: tabular-nums; }
+    .ko { color: var(--ko) !important; }
+    .sec { margin-top: calc(var(--su) * 4); }
+
+    /* header: device tile icon + status */
+    .head { display: flex; align-items: center; gap: calc(var(--su) * 3); }
+    .ico { width: 44px; height: 44px; border-radius: 12px; background: var(--tile); display: flex; align-items: center; justify-content: center; flex: none; transition: background .3s; }
+    .ico svg { width: 24px; height: 24px; fill: var(--txt-l); transition: fill .3s; }
+    .on .ico { background: var(--hot); }
+    .on .ico svg { fill: #fff; }
+    .alarm .ico { background: var(--ko); }
+    .alarm .ico svg { fill: #fff; }
+    .head .t { flex: 1; min-width: 0; }
+    .head .st { font-size: var(--homey-font-size-large, 17px); line-height: var(--homey-line-height-large, 22px); font-weight: var(--homey-font-weight-bold, 700); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .pill { flex: none; border-radius: 999px; padding: 2px calc(var(--su) * 2.5); background: var(--tile); font-weight: var(--homey-font-weight-bold, 700); }
+    .on .pill { background: var(--hot); color: #fff; }
+
+    /* thermostat */
+    .th { display: flex; align-items: center; gap: calc(var(--su) * 3); }
+    .th .t { flex: 1; min-width: 0; }
+    .th .name { font-weight: var(--homey-font-weight-medium, 600); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .th .big { display: flex; align-items: baseline; gap: calc(var(--su) * 2); margin-top: 2px; }
+    .th .tgt { font-size: var(--homey-font-size-xxlarge, 34px); line-height: var(--homey-line-height-xxlarge, 40px); font-weight: var(--homey-font-weight-bold, 700); letter-spacing: -.5px; transition: color .2s; }
+    .th .tgt.pending { color: var(--hl); }
+    .th .tgt.up { color: var(--hot); }
+    .th .cur { white-space: nowrap; }
+    .th .sch { border: 0; background: none; padding: 0; margin-top: 2px; color: var(--hl); font-weight: var(--homey-font-weight-medium, 600); cursor: pointer; }
+    .step { display: flex; flex-direction: column; gap: 2px; flex: none; }
+    .step button { width: 48px; height: 38px; border: 0; background: var(--tile); color: var(--txt); display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background .15s; }
+    .step button:first-child { border-radius: var(--r) var(--r) 4px 4px; }
+    .step button:last-child { border-radius: 4px 4px var(--r) var(--r); }
+    .step button:active { background: var(--tile-2); }
+    .step svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* programs: segmented control */
+    .seg { display: flex; padding: 3px; gap: 3px; border-radius: var(--r); background: var(--tile); margin-top: calc(var(--su) * 3); }
+    .seg button { flex: 1 1 0; min-width: 0; border: 0; background: none; border-radius: calc(var(--r) - 3px); padding: calc(var(--su) * 1.5) calc(var(--su)); font-size: var(--homey-font-size-small, 13px); font-weight: var(--homey-font-weight-medium, 600); color: var(--txt-l); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: background .2s, color .2s; }
+    .seg button.on { background: var(--bg); color: var(--txt); box-shadow: inset 0 0 0 1px var(--line); }
+    .seg button.on.guess { background: none; box-shadow: none; outline: 1.5px dashed var(--txt-l); outline-offset: -2px; }
+    .seg button.busy { opacity: .55; }
+
+    /* temperatures: tiles */
+    .tiles { display: grid; gap: calc(var(--su) * 2); }
+    .tile { background: var(--tile); border-radius: var(--r); padding: calc(var(--su) * 2.5) calc(var(--su) * 3); min-width: 0; }
+    .tile .lab { display: flex; align-items: center; gap: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .tile .lab svg { width: 14px; height: 14px; fill: none; stroke: var(--txt-l); stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+    .tile b { display: block; margin-top: 2px; font-size: var(--homey-font-size-xlarge, 22px); line-height: var(--homey-line-height-xlarge, 28px); font-weight: var(--homey-font-weight-bold, 700); }
+
+    /* pellets */
+    .row { display: flex; justify-content: space-between; align-items: baseline; gap: calc(var(--su) * 2); }
+    .row .k { font-weight: var(--homey-font-weight-medium, 600); }
+    .bar { height: 8px; border-radius: 999px; background: var(--tile-2); overflow: hidden; margin: calc(var(--su) * 1.5) 0 calc(var(--su) * 1); }
+    .bar i { display: block; height: 100%; border-radius: 999px; background: var(--hot); transition: width .5s; }
     .bar.low i { background: var(--ko); }
-    .line { display: flex; justify-content: space-between; gap: 8px; padding: 3px 0; border-top: 1px solid var(--homey-line-color, rgba(0,0,0,.06)); }
-    .line:first-of-type { border-top: 0; }
-    .line .v { font-variant-numeric: tabular-nums; text-align: right; }
-    .ko { color: var(--ko); }
-    .hint { font-size: 11px; color: var(--homey-text-color-light, #777); margin-top: 4px; }
-    .ctl { display: flex; align-items: stretch; margin: 2px 0 12px; border-radius: 16px; background: var(--homey-background-color, #fff); box-shadow: 0 1px 4px rgba(0,0,0,.08); border: 1px solid var(--homey-line-color, rgba(0,0,0,.06)); overflow: hidden; }
-    .ctl .main { flex: 1; display: flex; align-items: center; gap: 12px; padding: 10px 12px; min-width: 0; }
-    .ctl .ico { position: relative; width: 40px; height: 40px; flex: none; }
-    .ctl .ico svg.dial { width: 40px; height: 40px; }
-    .ctl .badge { position: absolute; right: -4px; bottom: -4px; width: 18px; height: 18px; border-radius: 50%; background: #9aa0a6; display: flex; align-items: center; justify-content: center; border: 2px solid var(--homey-background-color, #fff); }
-    .ctl .badge.up { background: var(--accent); }
-    .ctl .badge svg { width: 10px; height: 10px; fill: #fff; }
-    .ctl .txt { min-width: 0; }
-    .ctl .name { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .ctl .name small { font-weight: 400; font-size: 11px; color: var(--homey-text-color-light, #777); margin-left: 4px; }
-    .ctl .temps2 { display: flex; align-items: baseline; gap: 6px; font-variant-numeric: tabular-nums; }
-    .ctl .cur { font-size: 20px; font-weight: 600; color: var(--homey-text-color-light, #888); }
-    .ctl .arrow { font-size: 16px; color: var(--homey-text-color-light, #888); }
-    .ctl .tgt { font-size: 22px; font-weight: 700; }
-    .ctl .tgt.pending { color: var(--accent); }
-    .ctl .sch { font-size: 11px; color: var(--accent); background: none; border: 0; padding: 2px 0 0; cursor: pointer; }
-    .ctl .btns { display: flex; flex-direction: column; border-left: 1px solid var(--homey-line-color, rgba(0,0,0,.08)); width: 48px; flex: none; }
-    .ctl .btns button { flex: 1; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--homey-text-color, #222); }
-    .ctl .btns button + button { border-top: 1px solid var(--homey-line-color, rgba(0,0,0,.08)); }
-    .chips { display: flex; gap: 6px; margin: -4px 0 12px; flex-wrap: wrap; }
-    .chips button { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid var(--homey-line-color, rgba(0,0,0,.1)); background: var(--homey-background-color, #fff); color: var(--homey-text-color, #222); border-radius: 16px; padding: 6px 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .chips button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
-    .chips button.busy { opacity: .6; }
-    .chips.acts { margin: 10px 0 2px; }
-    .chips button.ok { background: var(--ok); border-color: var(--ok); color: #fff; }
-    .chips button.guess { background: transparent; color: var(--accent); border: 1.5px dashed var(--accent); }
-    .ctl .btns svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* info list */
+    .list { margin-top: calc(var(--su) * 3); }
+    .list .row { padding: calc(var(--su) * 2) 0; border-top: 1px solid var(--line); }
+    .list .row > span:first-child { color: var(--txt-l); }
+    .list .v { text-align: right; }
+
+    /* actions */
+    .acts { display: flex; gap: calc(var(--su) * 2); margin-top: calc(var(--su) * 3); }
+    .acts button { flex: 1 1 0; min-width: 0; border: 0; border-radius: var(--r); background: var(--tile); color: var(--hl); padding: calc(var(--su) * 2.5) calc(var(--su) * 2); font-weight: var(--homey-font-weight-medium, 600); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; transition: background .2s, color .2s; }
+    .acts button.on { background: var(--hl); color: #fff; }
+    .acts button.ok { background: var(--ok); color: #fff; }
+    .acts button.busy { opacity: .55; }
   </style>
 </head>
 <body class="homey-widget">
-  <div class="w"><div id="ctl"></div><div id="w"><div class="sub">…</div></div></div>
+  <div class="w"><div id="head"></div><div id="ctl"></div><div id="w"><div class="light">…</div></div></div>
   <script type="text/javascript">
     var T = {
       fr: { comfort: 'Séjour', thermostat: 'Thermostat', outdoor: 'Extérieur', power: 'Puissance', pellets: 'Granulés', empty: 'vide vers',
         month: 'Ce mois', forecast: 'prévu', bags: 'sacs', cleaning: 'Nettoyage', service: 'Entretien', hold: 'Maintien', unreachable: 'Poêle injoignable', none: 'Aucun poêle',
-        tgtThermostat: 'Consigne thermostat', tgtLiving: 'Consigne séjour', schedule: 'Programme', mSchedule: 'programme', mManual: 'manuel', mAway: 'absent', mHold: 'maintien', mFrost: 'hors-gel', sending: 'envoi…', away: 'Absent', actRefill: 'Pellets rechargés', actClean: 'Poêle nettoyé', confirm: 'Confirmer ?', done: 'Enregistré', atPower: 'à P{p} : {h} h' },
+        now: 'actuellement', schedule: 'Revenir au programme', mSchedule: 'Programme', mManual: 'Manuel', mAway: 'Absent', mHold: 'Maintien', mFrost: 'Hors-gel', sending: 'Envoi…', away: 'Absent', actRefill: 'Pellets rechargés', actClean: 'Poêle nettoyé', confirm: 'Confirmer ?', done: 'Enregistré', atPower: 'à P{p} : {h} h' },
       en: { comfort: 'Living room', thermostat: 'Thermostat', outdoor: 'Outdoor', power: 'Power', pellets: 'Pellets', empty: 'empty around',
         month: 'This month', forecast: 'forecast', bags: 'bags', cleaning: 'Cleaning', service: 'Service', hold: 'Holding', unreachable: 'Stove unreachable', none: 'No stove',
-        tgtThermostat: 'Thermostat setpoint', tgtLiving: 'Living room target', schedule: 'Schedule', mSchedule: 'schedule', mManual: 'manual', mAway: 'away', mHold: 'holding', mFrost: 'frost guard', sending: 'sending…', away: 'Away', actRefill: 'Pellets refilled', actClean: 'Stove cleaned', confirm: 'Confirm?', done: 'Recorded', atPower: 'at P{p}: {h} h' }
+        now: 'now', schedule: 'Back to schedule', mSchedule: 'Schedule', mManual: 'Manual', mAway: 'Away', mHold: 'Holding', mFrost: 'Frost guard', sending: 'Sending…', away: 'Away', actRefill: 'Pellets refilled', actClean: 'Stove cleaned', confirm: 'Confirm?', done: 'Recorded', atPower: 'at P{p}: {h} h' }
     };
     var FLAME = '<svg viewBox="0 0 24 24"><path d="M13.5 1.7s.7 2.6.7 4.7c0 2-1.3 3.6-3.3 3.6S7.6 8.4 7.6 6.4l.03-.36C5.6 8.5 4.4 11.6 4.4 15c0 4.4 3.6 8 8 8s8-3.6 8-8C20.4 9.6 17.8 4.8 13.5 1.7zM12.1 20c-1.8 0-3.2-1.4-3.2-3.1 0-1.6 1-2.8 2.8-3.1 1.8-.4 3.6-1.2 4.6-2.6.4 1.3.6 2.6.6 4 0 2.7-2.1 4.8-4.8 4.8z"/></svg>';
+    var I_HOME = '<svg viewBox="0 0 16 16"><path d="M2.5 7.2 8 2.5l5.5 4.7V13a.8.8 0 0 1-.8.8H3.3a.8.8 0 0 1-.8-.8z"/><path d="M6.3 13.8V9.7h3.4v4.1"/></svg>';
+    var I_THERMO = '<svg viewBox="0 0 16 16"><path d="M9.6 9.4V3.2a1.6 1.6 0 0 0-3.2 0v6.2a3 3 0 1 0 3.2 0z"/><path d="M8 6.5v4.3"/></svg>';
+    var I_OUT = '<svg viewBox="0 0 16 16"><circle cx="6" cy="6" r="2.3"/><path d="M6 1.2v1M1.2 6h1M2.6 2.6l.7.7M9.4 2.6l-.7.7"/><path d="M5.6 13.8h6.2a2.4 2.4 0 0 0 .2-4.8 3.2 3.2 0 0 0-6.1.9 2 2 0 0 0-.3 3.9z"/></svg>';
+    var CHEV_UP = '<svg viewBox="0 0 16 16"><path d="M3.5 10 8 5.5l4.5 4.5"/></svg>';
+    var CHEV_DOWN = '<svg viewBox="0 0 16 16"><path d="M3.5 6 8 10.5 12.5 6"/></svg>';
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
     function deg(v) { return v == null ? '—' : (Math.round(v * 10) / 10).toFixed(1) + '°'; }
-    function line(label, value, cls) { return '<div class="line"><span>' + esc(label) + '</span><span class="v ' + (cls || '') + '">' + esc(value) + '</span></div>'; }
-    function render(d, settings) {
+    function row(label, value, cls) { return '<div class="row small"><span>' + esc(label) + '</span><span class="v num ' + (cls || '') + '">' + esc(value) + '</span></div>'; }
+    function showControls(d, settings) { return !!d.thermostat && !(settings && settings.show_controls === false); }
+
+    function renderHead(d, settings) {
       var t = T[d.lang] || T.en;
+      var box = document.getElementById('head');
       if (!d.status && !d.available) {
-        document.getElementById('w').innerHTML = '<div class="sub">' + esc(d.status === null && d.available === false ? t.unreachable : t.none) + '</div>';
-        return;
+        box.innerHTML = '<div class="head"><div class="ico">' + FLAME + '</div><div class="t"><div class="st">' + esc(d.status === null && d.available === false ? t.unreachable : t.none) + '</div></div></div>';
+        return false;
       }
       var heating = ['ignition', 'heating', 'eco'].indexOf(d.status) >= 0;
       var cls = d.error ? 'alarm' : heating ? 'on' : '';
+      var sub = d.error || (d.hold && !showControls(d, settings) ? t.hold + ' ' + d.hold.target + ' °C' : (d.startText && d.startText !== '—' ? d.startText : ''));
+      box.innerHTML = '<div class="head ' + cls + '"><div class="ico">' + FLAME + '</div><div class="t">' +
+        '<div class="st">' + esc(d.available ? (d.statusText || '—') : t.unreachable) + '</div>' +
+        (sub ? '<div class="small light ' + (d.error ? 'ko' : '') + '">' + esc(sub) + '</div>' : '') + '</div>' +
+        (heating && d.power ? '<span class="pill small num">P' + esc(d.power) + '</span>' : '') + '</div>';
+      return true;
+    }
+
+    function render(d, settings) {
+      var t = T[d.lang] || T.en;
       var tz = d.timeZone;
       var dhm = function (ms) { return new Date(ms).toLocaleString(d.lang === 'fr' ? 'fr-FR' : 'en-GB', { weekday: 'short', hour: '2-digit', minute: '2-digit', timeZone: tz }); };
-      var html = '<div class="top ' + cls + '"><div class="flame">' + FLAME + '</div><div style="flex:1">' +
-        '<div class="st">' + esc(d.available ? (d.statusText || '—') : t.unreachable) + (heating && d.power ? ' · P' + esc(d.power) : '') + '</div>' +
-        '<div class="sub ' + (d.error ? 'ko' : '') + '">' + esc(d.error || (d.hold && !(d.thermostat && !(settings && settings.show_controls === false)) ? t.hold + ' ' + d.hold.target + ' °C' : (d.startText && d.startText !== '—' ? d.startText : ''))) + '</div></div></div>';
-      // the thermostat card already shows one indoor temperature: no duplicate here
-      var card = !!d.thermostat && !(settings && settings.show_controls === false);
+      // the thermostat block already shows one indoor temperature: no duplicate here
+      var card = showControls(d, settings);
       var cardShowsLiving = d.regulationMode !== 'flows';
       var cells = [];
-      if (!card || !cardShowsLiving) cells.push([d.comfort, t.comfort]);
-      if (!card || cardShowsLiving) cells.push([d.regulation, t.thermostat]);
-      cells.push([d.outdoor, t.outdoor]);
-      html += '<div class="temps" style="grid-template-columns:repeat(' + cells.length + ',1fr)">' + cells.map(function (c) {
-        return '<div><b>' + deg(c[0]) + '</b><span>' + c[1] + '</span></div>';
+      if (!card || !cardShowsLiving) cells.push([d.comfort, t.comfort, I_HOME]);
+      if (!card || cardShowsLiving) cells.push([d.regulation, t.thermostat, I_THERMO]);
+      cells.push([d.outdoor, t.outdoor, I_OUT]);
+      var html = '<div class="tiles sec" style="grid-template-columns:repeat(' + cells.length + ',1fr)">' + cells.map(function (c) {
+        return '<div class="tile"><div class="lab small light">' + c[2] + esc(c[1]) + '</div><b class="num">' + deg(c[0]) + '</b></div>';
       }).join('') + '</div>';
       var p = d.pellets;
-      html += '<div class="line"><span>' + t.pellets + '</span><span class="v ' + (p.low ? 'ko' : '') + '">' + esc(p.kgLeft) + ' kg · ' + esc(p.percent) + ' %</span></div>';
+      html += '<div class="sec"><div class="row"><span class="k">' + t.pellets + '</span><span class="num ' + (p.low ? 'ko' : '') + '">' + esc(p.kgLeft) + ' kg · ' + esc(p.percent) + ' %</span></div>';
       html += '<div class="bar ' + (p.low ? 'low' : '') + '"><i style="width:' + Math.max(0, Math.min(100, p.percent)) + '%"></i></div>';
       var hints = [];
       if (p.hoursAtCurrentPower != null) hints.push(t.atPower.replace('{p}', p.power).replace('{h}', p.hoursAtCurrentPower));
       if (p.emptyAt) hints.push(t.empty + ' ' + dhm(p.emptyAt));
-      if (hints.length) html += '<div class="hint">' + esc(hints.join(' · ')) + '</div>';
+      if (hints.length) html += '<div class="small light">' + esc(hints.join(' · ')) + '</div>';
+      html += '</div><div class="list">';
       if (!settings || settings.show_month !== false) {
-        html += line(t.month, d.month.kg + ' kg · ' + d.month.cost + ' €' + (d.month.forecast != null ? ' · ' + t.forecast + ' ' + d.month.forecast + ' ' + t.bags : ''));
+        html += row(t.month, d.month.kg + ' kg · ' + d.month.cost + ' €' + (d.month.forecast != null ? ' · ' + t.forecast + ' ' + d.month.forecast + ' ' + t.bags : ''));
       }
-      html += line(t.cleaning, d.cleaning.hours + ' / ' + d.cleaning.threshold + ' h', d.cleaning.due ? 'ko' : '');
+      html += row(t.cleaning, d.cleaning.hours + ' / ' + d.cleaning.threshold + ' h', d.cleaning.due ? 'ko' : '');
       var x = (d.service.nextDate || '').split('-');
-      html += line(t.service, (x.length === 3 ? x[2] + '/' + x[1] + '/' + x[0] : '—') + (d.service.hoursLeft != null ? ' · ' + d.service.hoursLeft + ' h' : ''), d.service.due ? 'ko' : '');
+      html += row(t.service, (x.length === 3 ? x[2] + '/' + x[1] + '/' + x[0] : '—') + (d.service.hoursLeft != null ? ' · ' + d.service.hoursLeft + ' h' : ''), d.service.due ? 'ko' : '');
+      html += '</div>';
       if (!settings || settings.show_actions !== false) {
-        html += '<div class="chips acts">' + [['refilled', t.actRefill], ['cleaned', t.actClean]].map(function (a) {
+        html += '<div class="acts">' + [['refilled', t.actRefill], ['cleaned', t.actClean]].map(function (a) {
           var st = actState[a[0]];
           var label = st === 'confirm' ? t.confirm : st === 'done' ? '✓ ' + t.done : a[1];
           return '<button data-act="' + a[0] + '" class="' + (st === 'confirm' ? 'on' : st === 'done' ? 'ok' : '') + '">' + esc(label) + '</button>';
@@ -122,16 +180,10 @@
       var m = d.thermostat && d.thermostat.mode;
       if (m === 'schedule' && d.program && d.programs) {
         var pn = d.programs.filter(function (p) { return String(p.id) === String(d.program.id); })[0];
-        if (pn) return t.mSchedule + ' ' + pn.name;
+        if (pn) return t.mSchedule + ' · ' + pn.name;
       }
       return m === 'schedule' ? t.mSchedule : m === 'manual' ? t.mManual : m === 'away' ? t.mAway : m === 'hg' || m === 'frost_guard' ? t.mFrost : (m || '');
     }
-    var DIAL = '<svg class="dial" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="20" cy="20" r="12.5" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
-      '<path d="M20.6 13.8s.4 1.5.4 2.6c0 1.1-.7 2-1.8 2s-1.8-.9-1.8-2v-.2c-1.1 1.4-1.8 3.1-1.8 5 0 2.4 2 4.4 4.4 4.4s4.4-2 4.4-4.4c0-3-1.4-5.6-3.8-7.4z" fill="currentColor"/></svg>';
-    var DOWN = '<svg viewBox="0 0 10 10"><path d="M5 9 1.5 5.2h2.3V1h2.4v4.2h2.3z"/></svg>';
-    var UP = '<svg viewBox="0 0 10 10"><path d="M5 1 8.5 4.8H6.2V9H3.8V4.8H1.5z"/></svg>';
-    var CHEV_UP = '<svg viewBox="0 0 16 16"><path d="M3 10.5 8 5.5l5 5"/></svg>';
-    var CHEV_DOWN = '<svg viewBox="0 0 16 16"><path d="M3 5.5 8 10.5l5-5"/></svg>';
     function programsHtml(t, d) {
       var list = (d.programs || []).slice();
       if (!list.length && !d.thermostat) return '';
@@ -140,7 +192,7 @@
       var prog = d.program || null;
       var active = held ? null : mode === 'away' ? 'away' : mode === 'schedule' && prog ? prog.id : null;
       list.push({ id: 'away', name: t.away });
-      return '<div class="chips">' + list.map(function (p) {
+      return '<div class="seg">' + list.map(function (p) {
         var on = String(p.id) === String(active);
         return '<button data-id="' + esc(p.id) + '" class="' + (on ? 'on' : '') + (on && prog && prog.guessed && p.id !== 'away' ? ' guess' : '') + '">' + esc(p.name) + '</button>';
       }).join('') + '</div>';
@@ -148,26 +200,26 @@
 
     function renderControls(d, settings, Homey, reload) {
       var box = document.getElementById('ctl');
-      if (!d.thermostat || (settings && settings.show_controls === false)) { box.innerHTML = ''; return; }
+      if (!showControls(d, settings)) { box.innerHTML = ''; return; }
       var t = T[d.lang] || T.en;
       var th = d.thermostat;
       var living = d.regulationMode !== 'flows';
       var cur = living ? d.comfort : (th.current != null ? th.current : d.regulation);
       var target = living && d.hold ? d.hold.target : th.target;
       var shown = ctlState.pending != null ? ctlState.pending : target;
-      var fmt = function (v) { return v == null ? '—' : (Math.round(v * 10) / 10).toFixed(1) + '°'; };
       var heatingUp = cur != null && shown != null && shown > cur;
       var notSchedule = (living && d.hold) || (th.mode && th.mode !== 'schedule');
-      box.innerHTML = '<div class="ctl"><div class="main"><div class="ico">' + DIAL + '<span class="badge ' + (heatingUp ? 'up' : '') + '">' + (heatingUp ? UP : DOWN) + '</span></div>' +
-        '<div class="txt"><div class="name">' + esc(th.name) + '<small id="ctlMode">' + esc(modeText(t, d)) + '</small></div>' +
-        '<div class="temps2"><span class="cur">' + fmt(cur) + '</span><span class="arrow">→</span><span class="tgt' + (ctlState.pending != null ? ' pending' : '') + '" id="ctlVal">' + fmt(shown) + '</span></div>' +
-        (notSchedule ? '<button class="sch" id="ctlSch">↺ ' + esc(t.schedule) + '</button>' : '') + '</div></div>' +
-        '<div class="btns"><button id="ctlPlus" aria-label="+">' + CHEV_UP + '</button><button id="ctlMinus" aria-label="-">' + CHEV_DOWN + '</button></div></div>' +
-        programsHtml(t, d);
-      box.querySelectorAll('.chips button').forEach(function (b) {
+      box.innerHTML = '<div class="sec"><div class="th"><div class="t">' +
+        '<div class="name small">' + esc(th.name) + ' · <span class="light" id="ctlMode">' + esc(modeText(t, d)) + '</span></div>' +
+        '<div class="big"><span class="tgt num' + (heatingUp ? ' up' : '') + (ctlState.pending != null ? ' pending' : '') + '" id="ctlVal">' + deg(shown) + '</span>' +
+        '<span class="cur small light num">' + deg(cur) + ' ' + esc(t.now) + '</span></div>' +
+        (notSchedule ? '<button class="sch small" id="ctlSch">↺ ' + esc(t.schedule) + '</button>' : '') + '</div>' +
+        '<div class="step"><button id="ctlPlus" aria-label="+">' + CHEV_UP + '</button><button id="ctlMinus" aria-label="-">' + CHEV_DOWN + '</button></div></div>' +
+        programsHtml(t, d) + '</div>';
+      box.querySelectorAll('.seg button').forEach(function (b) {
         b.onclick = function () {
           clearTimeout(ctlState.timer); ctlState.pending = null;
-          box.querySelectorAll('.chips button').forEach(function (x) { x.classList.remove('on'); });
+          box.querySelectorAll('.seg button').forEach(function (x) { x.classList.remove('on', 'guess'); });
           b.classList.add('on', 'busy');
           Homey.api('POST', '/program', { id: b.getAttribute('data-id') }).then(function () { reload(); setTimeout(reload, 4000); }).catch(function (err) {
             b.classList.remove('busy');
@@ -181,7 +233,7 @@
         var v = Math.min(th.max || 30, Math.max(th.min || 7, Math.round((base + delta) / step) * step));
         ctlState.pending = v;
         var el = document.getElementById('ctlVal');
-        el.textContent = fmt(v); el.className = 'tgt pending';
+        el.textContent = deg(v); el.className = 'tgt num pending';
         clearTimeout(ctlState.timer);
         ctlState.timer = setTimeout(function () {
           document.getElementById('ctlMode').textContent = t.sending;
@@ -229,22 +281,28 @@
           var m = document.getElementById('ctlMode'); if (m) m.textContent = (err && err.message) || String(err);
         });
       });
+      function fit() {
+        // the height follows the content (thermostat, programs, pellets…) at every refresh
+        var h = Math.ceil(document.body.scrollHeight) + 4;
+        if (first) {
+          first = false; Homey.ready({ height: h }); lastHeight = h;
+          setTimeout(function () { // fonts and layout settle after the first paint
+            var h2 = Math.ceil(document.body.scrollHeight) + 4;
+            if (h2 !== lastHeight && Homey.setHeight) { Homey.setHeight(h2); lastHeight = h2; }
+          }, 800);
+        } else if (h !== lastHeight && Homey.setHeight) { Homey.setHeight(h); lastHeight = h; }
+      }
       function load() {
         Homey.api('GET', '/', {}).then(function (d) {
-          render(d, settings);
-          if (ctlState.pending == null) renderControls(d, settings, Homey, load);
-          // the height follows the content (thermostat card, programs, pellets…) at every refresh
-          var h = Math.ceil(document.body.scrollHeight) + 8;
-          if (first) {
-            first = false; Homey.ready({ height: h }); lastHeight = h;
-            setTimeout(function () { // fonts and layout settle after the first paint
-              var h2 = Math.ceil(document.body.scrollHeight) + 8;
-              if (h2 !== lastHeight && Homey.setHeight) { Homey.setHeight(h2); lastHeight = h2; }
-            }, 800);
+          if (!renderHead(d, settings)) {
+            document.getElementById('ctl').innerHTML = ''; document.getElementById('w').innerHTML = '';
+          } else {
+            render(d, settings);
+            if (ctlState.pending == null) renderControls(d, settings, Homey, load);
           }
-          else if (h !== lastHeight && Homey.setHeight) { Homey.setHeight(h); lastHeight = h; }
+          fit();
         }).catch(function (err) {
-          document.getElementById('w').innerHTML = '<div class="sub ko">' + esc(err && err.message || err) + '</div>';
+          document.getElementById('w').innerHTML = '<div class="small ko">' + esc(err && err.message || err) + '</div>';
           if (first) { first = false; Homey.ready(); }
         });
       }
