@@ -87,8 +87,8 @@
     "st_accuracy_val": "mean error {mae} °C, bias {bias} °C ({n} h)",
     "src_meteofrance": "Météo-France",
     "src_device": "device",
-    "antic_title": "Anticipation (computation only, no control)",
-    "antic_desc": "The app continuously computes the start time needed to reach this temperature at this time, using what it has learnt about the house and the outdoor forecast. Targets will later come from Flow cards.",
+    "antic_title": "Anticipation",
+    "antic_desc": "Preview of the start time needed to reach this temperature at this time. Targets set by Flows (« Reach [21] °C at [06:20] ») take precedence.",
     "antic_target": "Target temperature (°C)",
     "antic_time": "Target time",
     "antic_sensor": "Target sensor",
@@ -198,7 +198,12 @@
     "co_remaining": "Level seen before refilling (%, optional)",
     "co_unknown": "not recorded yet: use « Tank refilled »",
     "co_refill_seen": "Refill",
-    "co_refill_est": "estimated"
+    "co_refill_est": "estimated",
+    "tab_state": "Status",
+    "tab_sensors": "Sensors",
+    "tab_heating": "Heating",
+    "tab_service": "Maintenance",
+    "tab_house": "House"
   },
   "sensor_role": {
     "comfort": "Comfort sensor",

@@ -289,7 +289,7 @@ class PelletStoveApp extends Homey.App {
       stoveStatus: this.stoveStatus,
       timeZone: this.homey.clock.getTimezone(),
       consumables: this.consumables.summary(state.outdoor),
-      regulation: this.regulator.summary(),
+      regulator: this.regulator.summary(),
       stove: (() => {
         const st = this.stove();
         return st ? { commandsEnabled: st.commandsEnabled(), power: this.stovePower } : null;

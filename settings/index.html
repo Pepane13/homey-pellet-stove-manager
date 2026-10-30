@@ -24,14 +24,43 @@
     td.sm { font-size: 12px; color: #555; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     td { padding: 5px 4px; border-bottom: 1px solid #eee; vertical-align: top; }
-    td.v { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    td.v { text-align: right; font-variant-numeric: tabular-nums; } td:first-child { min-width: 40%; }
     .ok { color: #1f9d55; } .ko { color: #dc2626; }
+    .tabs { display: flex; gap: 4px; overflow-x: auto; position: sticky; top: 0; background: #fff; padding: 6px 0; margin: 0 0 4px; border-bottom: 1px solid #eee; z-index: 2; }
+    .tabs button { width: auto; flex: 1 0 auto; margin: 0; padding: 8px 10px; font-size: 13px; font-weight: 600; background: #f3f4f6; color: #444; border-radius: 16px; }
+    .tabs button.active { background: #e8681a; color: #fff; }
+    section[data-tab] { display: none; }
+    section[data-tab].active { display: block; }
+    details { margin: 14px 0 0; }
+    details > summary { cursor: pointer; font-weight: 600; font-size: 14px; color: #444; padding: 6px 0; }
+    .msg { margin-top: 8px; font-size: 13px; min-height: 18px; }
   </style>
 </head>
 <body>
-  <h1 data-i18n="settings.title"></h1>
-  <p class="hint" data-i18n="settings.intro"></p>
+  <nav class="tabs" id="tabs">
+    <button data-tab="state" data-i18n="settings.tab_state"></button>
+    <button data-tab="sensors" data-i18n="settings.tab_sensors"></button>
+    <button data-tab="heating" data-i18n="settings.tab_heating"></button>
+    <button data-tab="service" data-i18n="settings.tab_service"></button>
+    <button data-tab="house" data-i18n="settings.tab_house"></button>
+  </nav>
 
+  <section data-tab="state">
+  <h2 data-i18n="settings.status"></h2>
+  <table id="status"><tr><td data-i18n="settings.loading"></td></tr></table>
+
+  <h2 data-i18n="settings.co_title"></h2>
+  <table id="coTable"></table>
+  <div class="row"><label for="coRemaining" style="flex:1" data-i18n="settings.co_remaining"></label><input type="number" id="coRemaining" min="0" max="100" step="5"></div>
+  <div class="row" style="gap:6px;flex-wrap:wrap">
+    <button id="coRefill" class="secondary" style="flex:1" data-i18n="settings.co_refill"></button>
+    <button id="coClean" class="secondary" style="flex:1" data-i18n="settings.co_clean"></button>
+  </div>
+  <div id="msg5" class="msg"></div>
+  </section>
+
+  <section data-tab="sensors">
+  <p class="hint" data-i18n="settings.intro"></p>
   <div id="roles"></div>
 
   <h2 data-i18n="settings.forecast_title"></h2>
@@ -43,6 +72,20 @@
     </select>
   </div>
 
+
+  <details>
+    <summary data-i18n="settings.advanced"></summary>
+  <div class="role">
+    <label class="title" for="stale" data-i18n="settings.stale"></label>
+    <div class="desc" data-i18n="settings.stale_desc"></div>
+    <input type="number" id="stale" min="15" max="1440" step="5">
+  </div>
+  </details>
+  <button id="save" data-i18n="settings.save"></button>
+  <div id="msg"></div>
+  </section>
+
+  <section data-tab="heating">
   <h2 data-i18n="settings.antic_title"></h2>
   <div class="role">
     <div class="desc" data-i18n="settings.antic_desc"></div>
@@ -80,37 +123,24 @@
     <div id="msg4" style="margin-top:8px;font-size:13px;min-height:18px"></div>
   </div>
 
-  <h2 data-i18n="settings.advanced"></h2>
-  <div class="role">
-    <label class="title" for="stale" data-i18n="settings.stale"></label>
-    <div class="desc" data-i18n="settings.stale_desc"></div>
-    <input type="number" id="stale" min="15" max="1440" step="5">
-  </div>
+  </section>
 
-  <button id="save" data-i18n="settings.save"></button>
-  <div id="msg"></div>
-
-  <h2 data-i18n="settings.status"></h2>
-  <table id="status"><tr><td data-i18n="settings.loading"></td></tr></table>
-
-  <h2 data-i18n="settings.co_title"></h2>
-  <table id="coTable"></table>
-  <div class="row"><label for="coRemaining" style="flex:1" data-i18n="settings.co_remaining"></label><input type="number" id="coRemaining" min="0" max="100" step="5"></div>
-  <div class="row" style="gap:6px;flex-wrap:wrap">
-    <button id="coRefill" class="secondary" style="flex:1" data-i18n="settings.co_refill"></button>
-    <button id="coClean" class="secondary" style="flex:1" data-i18n="settings.co_clean"></button>
-  </div>
+  <section data-tab="service">
   <h2 style="font-size:14px" data-i18n="settings.co_service_title"></h2>
   <table id="coJournal"></table>
   <div class="row"><label for="svcDate" style="flex:1" data-i18n="settings.co_svc_date"></label><input type="date" id="svcDate" style="width:150px;padding:6px;border:1px solid #ccd;border-radius:6px"></div>
   <div class="row"><input type="text" id="svcNote" style="flex:1;padding:7px;border:1px solid #ccd;border-radius:6px"></div>
   <div class="row"><label for="svcCost" style="flex:1" data-i18n="settings.co_svc_cost"></label><input type="number" id="svcCost" min="0" step="1"></div>
   <button id="coService" class="secondary" data-i18n="settings.co_service"></button>
-  <h2 style="font-size:14px" data-i18n="settings.co_settings"></h2>
+  <details>
+    <summary data-i18n="settings.co_settings"></summary>
   <div class="role" id="coSettings"></div>
   <button id="coSave" class="secondary" data-i18n="settings.co_save"></button>
   <div id="msg3"></div>
+  </details>
+  </section>
 
+  <section data-tab="house">
   <h2 data-i18n="settings.ins_title"></h2>
   <p class="hint" data-i18n="settings.ins_desc"></p>
   <div id="insChart"></div>
@@ -121,10 +151,11 @@
   <h2 data-i18n="settings.learn_title"></h2>
   <p class="hint" data-i18n="settings.learn_desc"></p>
   <table id="learning"></table>
-  <h2 style="font-size:14px" data-i18n="settings.learn_events"></h2>
-  <table id="events"></table>
+  <details><summary data-i18n="settings.learn_events"></summary>
+  <table id="events"></table></details>
   <button id="resetLearning" class="secondary" data-i18n="settings.learn_reset"></button>
   <div id="msg2"></div>
+  </section>
 
 <script type="text/javascript">
   var ROLES = [
@@ -137,6 +168,19 @@
   ];
 
   function onHomeyReady(Homey) {
+    (function tabs() {
+      var buttons = document.querySelectorAll('#tabs button');
+      var show = function (name) {
+        document.querySelectorAll('section[data-tab]').forEach(function (x) { x.classList.toggle('active', x.getAttribute('data-tab') === name); });
+        buttons.forEach(function (b) { b.classList.toggle('active', b.getAttribute('data-tab') === name); });
+        try { localStorage.setItem('psm_tab', name); } catch (e) { /* ignore */ }
+        window.scrollTo(0, 0);
+      };
+      buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.getAttribute('data-tab')); }); });
+      var saved = null;
+      try { saved = localStorage.getItem('psm_tab'); } catch (e) { /* ignore */ }
+      show(saved && document.querySelector('section[data-tab="' + saved + '"]') ? saved : 'state');
+    })();
     var sources = [];
     var config = {};
     var t = function (k, tokens) {
@@ -351,7 +395,7 @@
     }
 
     function showRegulation(s) {
-      var r = s.regulation;
+      var r = s.regulator;
       if (!r) return;
       var row = function (label, value, cls) { return '<tr><td>' + esc(label) + '</td><td class="v ' + (cls || '') + '">' + esc(value) + '</td></tr>'; };
       var html = '';
@@ -376,7 +420,7 @@
 
     function coAction(body) {
       Homey.api('POST', '/consumables', body, function (err) {
-        el('msg3').textContent = err ? (err.message || String(err)) : t('settings.saved');
+        el('msg3').textContent = el('msg5').textContent = err ? (err.message || String(err)) : t('settings.saved');
         if (!err) showStatus();
       });
     }

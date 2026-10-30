@@ -50,5 +50,9 @@
   "0.7.1": {
     "en": "A sensor is reported as frozen only when its whole device stops reporting (humidity, CO2…), not when the temperature stays steady at night.",
     "fr": "Une sonde n'est déclarée figée que si tout son appareil cesse de remonter des valeurs (humidité, CO2…), et non quand la température reste stable la nuit."
+  },
+  "0.7.2": {
+    "en": "Settings page split into tabs (Status, Sensors, Heating, Maintenance, House), rarely used settings folded. Fix: the thermostat temperature was shown as « [object Object] » in the settings.",
+    "fr": "Page de réglages organisée en onglets (État, Sondes, Chauffe, Entretien, Maison), réglages peu utilisés repliés. Correction : la température du thermostat s'affichait « [object Object] » dans les réglages."
   }
 }

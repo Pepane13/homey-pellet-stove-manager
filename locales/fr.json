@@ -87,8 +87,8 @@
     "st_accuracy_val": "écart moyen {mae} °C, biais {bias} °C ({n} h)",
     "src_meteofrance": "Météo-France",
     "src_device": "appareil",
-    "antic_title": "Anticipation (calcul seul, aucune commande)",
-    "antic_desc": "L'app calcule en continu l'heure d'allumage nécessaire pour atteindre cette température à cette heure, avec ce qu'elle a appris de la maison et la prévision extérieure. Les objectifs viendront ensuite des cartes de Flow.",
+    "antic_title": "Anticipation",
+    "antic_desc": "Aperçu de l'heure d'allumage nécessaire pour atteindre cette température à cette heure. Les objectifs posés par les Flows (« Atteindre [21] °C à [06:20] ») sont prioritaires.",
     "antic_target": "Température visée (°C)",
     "antic_time": "Heure visée",
     "antic_sensor": "Sonde visée",
@@ -198,7 +198,12 @@
     "co_remaining": "Niveau vu avant de recharger (%, facultatif)",
     "co_unknown": "pas encore enregistrée : utilisez « Réservoir rechargé »",
     "co_refill_seen": "Recharge",
-    "co_refill_est": "estimé"
+    "co_refill_est": "estimé",
+    "tab_state": "État",
+    "tab_sensors": "Sondes",
+    "tab_heating": "Chauffe",
+    "tab_service": "Entretien",
+    "tab_house": "Maison"
   },
   "sensor_role": {
     "comfort": "Sonde de confort",
