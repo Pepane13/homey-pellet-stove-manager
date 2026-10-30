@@ -3,7 +3,7 @@
     "en": "Pellet stove",
     "fr": "Poêle à granulés"
   },
-  "height": 360,
+  "height": 400,
   "settings": [
     {
       "id": "show_month",
@@ -36,6 +36,10 @@
     "schedule": {
       "method": "POST",
       "path": "/schedule"
+    },
+    "program": {
+      "method": "POST",
+      "path": "/program"
     }
   }
 }

@@ -45,6 +45,10 @@
     .ctl .btns { display: flex; flex-direction: column; border-left: 1px solid var(--homey-line-color, rgba(0,0,0,.08)); width: 48px; flex: none; }
     .ctl .btns button { flex: 1; border: 0; background: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; color: var(--homey-text-color, #222); }
     .ctl .btns button + button { border-top: 1px solid var(--homey-line-color, rgba(0,0,0,.08)); }
+    .chips { display: flex; gap: 6px; margin: -4px 0 12px; flex-wrap: wrap; }
+    .chips button { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid var(--homey-line-color, rgba(0,0,0,.1)); background: var(--homey-background-color, #fff); color: var(--homey-text-color, #222); border-radius: 16px; padding: 6px 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .chips button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .chips button.busy { opacity: .6; }
     .ctl .btns svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   </style>
 </head>
@@ -54,10 +58,10 @@
     var T = {
       fr: { comfort: 'Séjour', thermostat: 'Thermostat', outdoor: 'Extérieur', power: 'Puissance', pellets: 'Granulés', empty: 'vide vers',
         month: 'Ce mois', forecast: 'prévu', bags: 'sacs', cleaning: 'Nettoyage', service: 'Entretien', hold: 'Maintien', unreachable: 'Poêle injoignable', none: 'Aucun poêle',
-        tgtThermostat: 'Consigne thermostat', tgtLiving: 'Consigne séjour', schedule: 'Programme', mSchedule: 'programme', mManual: 'manuel', mAway: 'absent', mHold: 'maintien', mFrost: 'hors-gel', sending: 'envoi…', atPower: 'à P{p} : {h} h' },
+        tgtThermostat: 'Consigne thermostat', tgtLiving: 'Consigne séjour', schedule: 'Programme', mSchedule: 'programme', mManual: 'manuel', mAway: 'absent', mHold: 'maintien', mFrost: 'hors-gel', sending: 'envoi…', away: 'Absent', atPower: 'à P{p} : {h} h' },
       en: { comfort: 'Living room', thermostat: 'Thermostat', outdoor: 'Outdoor', power: 'Power', pellets: 'Pellets', empty: 'empty around',
         month: 'This month', forecast: 'forecast', bags: 'bags', cleaning: 'Cleaning', service: 'Service', hold: 'Holding', unreachable: 'Stove unreachable', none: 'No stove',
-        tgtThermostat: 'Thermostat setpoint', tgtLiving: 'Living room target', schedule: 'Schedule', mSchedule: 'schedule', mManual: 'manual', mAway: 'away', mHold: 'holding', mFrost: 'frost guard', sending: 'sending…', atPower: 'at P{p}: {h} h' }
+        tgtThermostat: 'Thermostat setpoint', tgtLiving: 'Living room target', schedule: 'Schedule', mSchedule: 'schedule', mManual: 'manual', mAway: 'away', mHold: 'holding', mFrost: 'frost guard', sending: 'sending…', away: 'Away', atPower: 'at P{p}: {h} h' }
     };
     var FLAME = '<svg viewBox="0 0 24 24"><path d="M13.5 1.7s.7 2.6.7 4.7c0 2-1.3 3.6-3.3 3.6S7.6 8.4 7.6 6.4l.03-.36C5.6 8.5 4.4 11.6 4.4 15c0 4.4 3.6 8 8 8s8-3.6 8-8C20.4 9.6 17.8 4.8 13.5 1.7zM12.1 20c-1.8 0-3.2-1.4-3.2-3.1 0-1.6 1-2.8 2.8-3.1 1.8-.4 3.6-1.2 4.6-2.6.4 1.3.6 2.6.6 4 0 2.7-2.1 4.8-4.8 4.8z"/></svg>';
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -113,6 +117,18 @@
     var UP = '<svg viewBox="0 0 10 10"><path d="M5 1 8.5 4.8H6.2V9H3.8V4.8H1.5z"/></svg>';
     var CHEV_UP = '<svg viewBox="0 0 16 16"><path d="M3 10.5 8 5.5l5 5"/></svg>';
     var CHEV_DOWN = '<svg viewBox="0 0 16 16"><path d="M3 5.5 8 10.5l5-5"/></svg>';
+    function programsHtml(t, d) {
+      var list = (d.programs || []).slice();
+      if (!list.length && !d.thermostat) return '';
+      var mode = d.thermostat.mode;
+      var held = d.hold && d.regulationMode !== 'flows';
+      var active = held ? null : mode === 'away' ? 'away' : mode === 'schedule' ? d.program : null;
+      list.push({ id: 'away', name: t.away });
+      return '<div class="chips">' + list.map(function (p) {
+        return '<button data-id="' + esc(p.id) + '" class="' + (String(p.id) === String(active) ? 'on' : '') + '">' + esc(p.name) + '</button>';
+      }).join('') + '</div>';
+    }
+
     function renderControls(d, settings, Homey, reload) {
       var box = document.getElementById('ctl');
       if (!d.thermostat || (settings && settings.show_controls === false)) { box.innerHTML = ''; return; }
@@ -129,7 +145,19 @@
         '<div class="txt"><div class="name">' + esc(th.name) + '<small id="ctlMode">' + esc(modeText(t, d)) + '</small></div>' +
         '<div class="temps2"><span class="cur">' + fmt(cur) + '</span><span class="arrow">→</span><span class="tgt' + (ctlState.pending != null ? ' pending' : '') + '" id="ctlVal">' + fmt(shown) + '</span></div>' +
         (notSchedule ? '<button class="sch" id="ctlSch">↺ ' + esc(t.schedule) + '</button>' : '') + '</div></div>' +
-        '<div class="btns"><button id="ctlPlus" aria-label="+">' + CHEV_UP + '</button><button id="ctlMinus" aria-label="-">' + CHEV_DOWN + '</button></div></div>';
+        '<div class="btns"><button id="ctlPlus" aria-label="+">' + CHEV_UP + '</button><button id="ctlMinus" aria-label="-">' + CHEV_DOWN + '</button></div></div>' +
+        programsHtml(t, d);
+      box.querySelectorAll('.chips button').forEach(function (b) {
+        b.onclick = function () {
+          clearTimeout(ctlState.timer); ctlState.pending = null;
+          box.querySelectorAll('.chips button').forEach(function (x) { x.classList.remove('on'); });
+          b.classList.add('on', 'busy');
+          Homey.api('POST', '/program', { id: b.getAttribute('data-id') }).then(reload).catch(function (err) {
+            b.classList.remove('busy');
+            document.getElementById('ctlMode').textContent = (err && err.message) || String(err);
+          });
+        };
+      });
       var step = th.step || 0.5;
       var bump = function (delta) {
         var base = ctlState.pending != null ? ctlState.pending : (target != null ? target : 20);

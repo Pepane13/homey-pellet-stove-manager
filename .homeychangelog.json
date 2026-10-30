@@ -70,5 +70,9 @@
   "0.8.3": {
     "en": "Pellet forecast based on the power levels actually used: the daily need is learnt every day from the stove's consumption (power mix) against the outdoor temperature, and it now drives the refill advice, the empty time and the monthly forecast. When the stove burns, the time left at the current power is shown (settings and widget).",
     "fr": "Prévision de pellets fondée sur les puissances réellement utilisées : le besoin journalier est appris chaque jour à partir de la consommation du poêle (répartition des puissances) selon la température extérieure, et sert désormais au conseil de recharge, à l'heure de fin du réservoir et à la prévision mensuelle. Quand le poêle brûle, l'autonomie à la puissance actuelle est affichée (réglages et widget)."
+  },
+  "0.8.4": {
+    "en": "Widget: buttons to select the thermostat program (its schedules, e.g. Temp 21 / Temp 19) or Away.",
+    "fr": "Widget : boutons de sélection du programme du thermostat (ses plannings, par ex. Temp 21 / Temp 19) ou Absent."
   }
 }

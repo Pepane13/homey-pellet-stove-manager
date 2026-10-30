@@ -359,6 +359,42 @@ class PelletStoveApp extends Homey.App {
     return { target: v };
   }
 
+  /** Thermostat programs (Netatmo schedules), cached for an hour. */
+  async thermostatPrograms() {
+    const id = this._thermostatId();
+    if (!id) return [];
+    const c = this._programs;
+    if (c && c.id === id && Date.now() - c.at < 3600e3) return c.list;
+    try {
+      const list = (await this.devicesApi.deviceActionChoices(id, 'thermostat_set_schedule', 'schedule'))
+        .map((x) => ({ id: String(x.id), name: x.name || String(x.id) }));
+      this._programs = { id, at: Date.now(), list };
+      return list;
+    } catch (err) {
+      this.error('Thermostat programs unavailable:', err.message);
+      return c && c.id === id ? c.list : [];
+    }
+  }
+
+  /** Widget: select a thermostat program (schedule) or « away ». Stops any hold. */
+  async setProgram(programId) {
+    const id = this._thermostatId();
+    if (!id) throw new Error(this.homey.__('widget.no_thermostat'));
+    if (this.regulator.hold()) this.regulator.clearHold();
+    if (programId === 'away') {
+      await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'away' });
+      this.log('Thermostat away (widget)');
+      return true;
+    }
+    const program = (await this.thermostatPrograms()).find((p) => p.id === String(programId));
+    if (!program) throw new Error(`Unknown program ${programId}`);
+    await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'schedule' });
+    await this.devicesApi.runDeviceAction(id, 'thermostat_set_schedule', { schedule: program });
+    this.homey.settings.set('widget_program', { thermostat: id, id: program.id });
+    this.log(`Thermostat program ${program.name} (widget)`);
+    return true;
+  }
+
   /** « Schedule » button of the widget: stops any hold and puts the thermostat back on its schedule. */
   async resumeSchedule() {
     if (this.regulator.hold()) this.regulator.clearHold();
@@ -392,6 +428,8 @@ class PelletStoveApp extends Homey.App {
       hold: this.regulator.hold(),
       regulationMode: this.regulator.config().mode,
       thermostat: await this._thermostatState(),
+      programs: await this.thermostatPrograms(),
+      program: (this.homey.settings.get('widget_program') || {}).id || null,
       pellets: {
         kgLeft: c.pellets.kgLeft, percent: c.pellets.percent, emptyAt: c.pellets.emptyAt, low: c.pellets.kgLeft <= c.config.lowKg,
         power: c.pellets.power, hoursAtCurrentPower: c.pellets.hoursAtCurrentPower,
