@@ -58,6 +58,14 @@ class StoveDriver extends Homey.Driver {
       .registerRunListener(async ({ device }) => device.turnOff());
     this.homey.flow.getActionCard('reset_alarm')
       .registerRunListener(async ({ device }) => device.resetAlarm());
+    const programCard = this.homey.flow.getActionCard('set_thermostat_program');
+    programCard.registerArgumentAutocompleteListener('program', async (query) => {
+      const away = this.homey.__('widget.away');
+      const list = [...await app().thermostatPrograms(), { id: 'away', name: away }];
+      const q = String(query || '').toLowerCase();
+      return list.filter((p) => p.name.toLowerCase().includes(q)).map((p) => ({ id: p.id, name: p.name }));
+    });
+    programCard.registerRunListener(async ({ program }) => app().setProgram(program.id));
     this.log('Pellet stove driver initialised');
   }
 

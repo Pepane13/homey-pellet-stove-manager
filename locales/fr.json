@@ -243,6 +243,7 @@
     "disabled": "Les commandes vers le poêle sont désactivées (réglages de l'appareil)."
   },
   "widget": {
-    "no_thermostat": "Aucun thermostat : choisissez la sonde du thermostat dans les réglages de l'app."
+    "no_thermostat": "Aucun thermostat : choisissez la sonde du thermostat dans les réglages de l'app.",
+    "away": "Absent"
   }
 }

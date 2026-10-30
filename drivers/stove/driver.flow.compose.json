@@ -832,6 +832,31 @@
           }
         }
       ]
+    },
+    {
+      "id": "set_thermostat_program",
+      "title": {
+        "en": "Select the thermostat program",
+        "fr": "Sélectionner le programme du thermostat"
+      },
+      "titleFormatted": {
+        "en": "Select the thermostat program [[program]]",
+        "fr": "Sélectionner le programme du thermostat [[program]]"
+      },
+      "hint": {
+        "en": "Thermostat of the app settings: its schedules, or Away. Use this card instead of the thermostat's own one so that the widget shows the active program.",
+        "fr": "Thermostat des réglages de l'app : ses plannings, ou Absent. Utilisez cette carte à la place de celle du thermostat pour que le widget affiche le programme actif."
+      },
+      "args": [
+        {
+          "type": "autocomplete",
+          "name": "program",
+          "placeholder": {
+            "en": "Program",
+            "fr": "Programme"
+          }
+        }
+      ]
     }
   ]
 }

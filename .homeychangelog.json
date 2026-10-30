@@ -78,5 +78,9 @@
   "0.8.5": {
     "en": "Widget: its height follows the content, the bottom lines (pellets, month, cleaning, service) are no longer cut off.",
     "fr": "Widget : sa hauteur suit le contenu, les lignes du bas (pellets, mois, nettoyage, entretien) ne sont plus coupées."
+  },
+  "0.8.6": {
+    "en": "Widget shows the active thermostat program. New Flow card « Select the thermostat program [Temp 21] » (schedules or Away): used instead of the thermostat's own card, it lets the app know the active program. Until a program is selected through the app, the one whose name matches the setpoint is shown (dashed).",
+    "fr": "Le widget affiche le programme actif du thermostat. Nouvelle carte de Flow « Sélectionner le programme du thermostat [Temp 21] » (plannings ou Absent) : utilisée à la place de la carte du thermostat, elle permet à l'app de connaître le programme actif. Tant qu'aucun programme n'a été choisi via l'app, celui dont le nom correspond à la consigne est indiqué (en pointillés)."
   }
 }

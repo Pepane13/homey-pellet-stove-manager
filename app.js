@@ -376,22 +376,26 @@ class PelletStoveApp extends Homey.App {
     }
   }
 
-  /** Widget: select a thermostat program (schedule) or « away ». Stops any hold. */
+  /**
+   * Select a thermostat program (schedule) or « away », from the widget or the Flow card
+   * « Select the thermostat program ». The app remembers it so that the widget shows the
+   * active program (the thermostat does not expose it). Stops any hold.
+   */
   async setProgram(programId) {
     const id = this._thermostatId();
     if (!id) throw new Error(this.homey.__('widget.no_thermostat'));
     if (this.regulator.hold()) this.regulator.clearHold();
     if (programId === 'away') {
       await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'away' });
-      this.log('Thermostat away (widget)');
+      this.log('Thermostat away');
       return true;
     }
     const program = (await this.thermostatPrograms()).find((p) => p.id === String(programId));
     if (!program) throw new Error(`Unknown program ${programId}`);
     await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'schedule' });
     await this.devicesApi.runDeviceAction(id, 'thermostat_set_schedule', { schedule: program });
-    this.homey.settings.set('widget_program', { thermostat: id, id: program.id });
-    this.log(`Thermostat program ${program.name} (widget)`);
+    this.homey.settings.set('widget_program', { thermostat: id, id: program.id, at: Date.now() });
+    this.log(`Thermostat program ${program.name}`);
     return true;
   }
 
@@ -403,6 +407,23 @@ class PelletStoveApp extends Homey.App {
     await this.devicesApi.runDeviceAction(id, 'thermostat_set_mode', { mode: 'schedule' });
     this.log('Thermostat back to its schedule (widget)');
     return true;
+  }
+
+  /**
+   * Active program: the last one selected through the app; when none was recorded, a program
+   * whose name contains the current setpoint (« Temp 21 » at 21 °C) is assumed.
+   */
+  async _activeProgram() {
+    const saved = this.homey.settings.get('widget_program') || {};
+    const id = this._thermostatId();
+    if (saved.id && saved.thermostat === id) return { id: saved.id, guessed: false };
+    const th = await this._thermostatState();
+    if (!th || th.mode !== 'schedule' || th.target == null) return null;
+    const match = (await this.thermostatPrograms()).filter((p) => {
+      const n = /(\d+(?:[.,]\d)?)/.exec(p.name);
+      return n && Number(n[1].replace(',', '.')) === th.target;
+    });
+    return match.length === 1 ? { id: match[0].id, guessed: true } : null;
   }
 
   /** Main stove values for the dashboard widget. */
@@ -429,7 +450,7 @@ class PelletStoveApp extends Homey.App {
       regulationMode: this.regulator.config().mode,
       thermostat: await this._thermostatState(),
       programs: await this.thermostatPrograms(),
-      program: (this.homey.settings.get('widget_program') || {}).id || null,
+      program: await this._activeProgram(),
       pellets: {
         kgLeft: c.pellets.kgLeft, percent: c.pellets.percent, emptyAt: c.pellets.emptyAt, low: c.pellets.kgLeft <= c.config.lowKg,
         power: c.pellets.power, hoursAtCurrentPower: c.pellets.hoursAtCurrentPower,

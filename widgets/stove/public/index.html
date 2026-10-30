@@ -49,6 +49,7 @@
     .chips button { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid var(--homey-line-color, rgba(0,0,0,.1)); background: var(--homey-background-color, #fff); color: var(--homey-text-color, #222); border-radius: 16px; padding: 6px 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .chips button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
     .chips button.busy { opacity: .6; }
+    .chips button.guess { background: transparent; color: var(--accent); border: 1.5px dashed var(--accent); }
     .ctl .btns svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   </style>
 </head>
@@ -109,6 +110,10 @@
     function modeText(t, d) {
       if (d.hold && d.regulationMode !== 'flows') return t.mHold + ' ' + d.hold.target + ' °C';
       var m = d.thermostat && d.thermostat.mode;
+      if (m === 'schedule' && d.program && d.programs) {
+        var pn = d.programs.filter(function (p) { return String(p.id) === String(d.program.id); })[0];
+        if (pn) return t.mSchedule + ' ' + pn.name;
+      }
       return m === 'schedule' ? t.mSchedule : m === 'manual' ? t.mManual : m === 'away' ? t.mAway : m === 'hg' || m === 'frost_guard' ? t.mFrost : (m || '');
     }
     var DIAL = '<svg class="dial" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" fill="none" stroke="currentColor" stroke-width="2.2"/><circle cx="20" cy="20" r="12.5" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
@@ -122,10 +127,12 @@
       if (!list.length && !d.thermostat) return '';
       var mode = d.thermostat.mode;
       var held = d.hold && d.regulationMode !== 'flows';
-      var active = held ? null : mode === 'away' ? 'away' : mode === 'schedule' ? d.program : null;
+      var prog = d.program || null;
+      var active = held ? null : mode === 'away' ? 'away' : mode === 'schedule' && prog ? prog.id : null;
       list.push({ id: 'away', name: t.away });
       return '<div class="chips">' + list.map(function (p) {
-        return '<button data-id="' + esc(p.id) + '" class="' + (String(p.id) === String(active) ? 'on' : '') + '">' + esc(p.name) + '</button>';
+        var on = String(p.id) === String(active);
+        return '<button data-id="' + esc(p.id) + '" class="' + (on ? 'on' : '') + (on && prog && prog.guessed && p.id !== 'away' ? ' guess' : '') + '">' + esc(p.name) + '</button>';
       }).join('') + '</div>';
     }
 
