@@ -124,3 +124,27 @@ test('maintenance: 12 months or 1200 h, whichever first, with journal', () => {
   assert.strictEqual(s.journal[0].note, 'Entretien annuel');
   assert.strictEqual(s.journal.length, 4);
 });
+
+test('a refill with the level seen learns the factor; the level at installation is unknown', () => {
+  const mem = {};
+  const clock = { t: Date.parse('2026-11-02T06:00:00Z') };
+  const { Consumables } = require('../lib/consumables');
+  const c = new Consumables({ store: { get: (k) => mem[k], set: (k, v) => { mem[k] = v; } }, now: () => clock.t, timeZone: () => 'Europe/Paris' });
+  const burn = (hours, power = 3) => {
+    for (let i = 0; i <= hours * 12; i++) { c.observe({ t: clock.t, status: 'heating', power, errorCode: 0 }); clock.t += 5 * 60e3; }
+    c.observe({ t: clock.t, status: 'off', power, errorCode: 0 });
+  };
+  burn(3);
+  c.refilled({ remainingPercent: 50 }); // install level unknown: no learning
+  assert.strictEqual(c.pelletState().factorSamples, 0);
+  assert.strictEqual(c.pelletState().known, true);
+  burn(4); // model ≈ 1.64 × 4 = 6.6 kg, but 9.5 kg really gone (50 % left)
+  c.refilled({ remainingPercent: 50 });
+  const st = c.pelletState();
+  assert.strictEqual(st.factorSamples, 0.5);
+  assert.ok(st.factor > 1.05 && st.factor < 1.3, `factor ${st.factor}`);
+  assert.strictEqual(st.refills[0].remainingPercent, 50);
+  assert.throws(() => c.refilled({ remainingPercent: 120 }));
+  c.setLevel(40);
+  assert.strictEqual(c.pelletState().percent, 40);
+});

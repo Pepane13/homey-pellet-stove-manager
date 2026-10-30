@@ -1,7 +1,7 @@
 {
   "_comment": "This file is generated. Please edit .homeycompose/app.json instead.",
   "id": "com.pepane13.pelletstove",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "compatibility": ">=12.1.0",
   "sdk": 3,
   "platforms": [
@@ -860,11 +860,31 @@
           "en": "Tank refilled (full)",
           "fr": "Réservoir rechargé (plein)"
         },
+        "titleFormatted": {
+          "en": "Tank refilled (about [[remaining]] % was left)",
+          "fr": "Réservoir rechargé (il restait environ [[remaining]] %)"
+        },
+        "hint": {
+          "en": "The tank is considered full (19 kg). The level seen before refilling is optional; when given, it improves the consumption estimate.",
+          "fr": "Le réservoir est considéré plein (19 kg). Le niveau vu avant de recharger est facultatif ; s'il est indiqué, il affine l'estimation de consommation."
+        },
         "args": [
           {
             "type": "device",
             "name": "device",
             "filter": "driver_id=stove"
+          },
+          {
+            "type": "number",
+            "name": "remaining",
+            "required": false,
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "placeholder": {
+              "en": "% left (optional)",
+              "fr": "% restant (facultatif)"
+            }
           }
         ]
       },
@@ -1103,6 +1123,35 @@
             "type": "device",
             "name": "device",
             "filter": "driver_id=stove"
+          }
+        ]
+      },
+      {
+        "id": "set_pellet_level",
+        "title": {
+          "en": "Correct the tank level",
+          "fr": "Corriger le niveau du réservoir"
+        },
+        "titleFormatted": {
+          "en": "The tank is at [[percent]] %",
+          "fr": "Le réservoir est à [[percent]] %"
+        },
+        "args": [
+          {
+            "type": "device",
+            "name": "device",
+            "filter": "driver_id=stove"
+          },
+          {
+            "type": "number",
+            "name": "percent",
+            "min": 0,
+            "max": 100,
+            "step": 5,
+            "placeholder": {
+              "en": "50",
+              "fr": "50"
+            }
           }
         ]
       }

@@ -42,5 +42,9 @@
   "0.6.0": {
     "en": "Regulation: hold a living-room temperature with a compensated Netatmo setpoint (fewer short cycles) or direct stove control with fallback to the thermostat schedule. Stove commands (power 1–5, on, off, alarm reset), disabled by default until enabled in the device settings. Automatic power and heating rate learnt per power level. Dashboard widget « Pellet stove »: status, temperatures, pellets left, month consumption and cost, cleaning and service. Needs Homey 12.1 or later.",
     "fr": "Régulation : maintien d'une température au séjour par consigne Netatmo compensée (moins de cycles courts) ou pilotage direct du poêle avec repli sur le planning du thermostat. Commandes du poêle (puissance 1–5, allumage, arrêt, acquittement d'alarme), désactivées par défaut jusqu'à activation dans les réglages de l'appareil. Puissance automatique et vitesse de chauffe apprise par puissance. Widget de tableau de bord « Poêle à granulés » : état, températures, granulés restants, consommation et coût du mois, nettoyage et entretien. Nécessite Homey 12.1 ou plus récent."
+  },
+  "0.7.0": {
+    "en": "« Tank refilled » can record the level seen before refilling: the consumption estimate learns from it, without waiting for an empty tank. New action « The tank is at [x] % ». The level at installation is no longer used for learning.",
+    "fr": "« Réservoir rechargé » peut indiquer le niveau vu avant de recharger : l'estimation de consommation en tient compte, sans attendre un réservoir vide. Nouvelle action « Le réservoir est à [x] % ». Le niveau supposé à l'installation n'est plus utilisé pour l'apprentissage."
   }
 }

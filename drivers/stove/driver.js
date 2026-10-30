@@ -34,7 +34,9 @@ class StoveDriver extends Homey.Driver {
     this.homey.flow.getConditionCard('maintenance_needed')
       .registerRunListener(async () => cons().maintenanceState().due);
     this.homey.flow.getActionCard('pellets_refilled')
-      .registerRunListener(async () => { cons().refilled(); after(); });
+      .registerRunListener(async ({ remaining }) => { cons().refilled({ remainingPercent: remaining ?? null }); after(); });
+    this.homey.flow.getActionCard('set_pellet_level')
+      .registerRunListener(async ({ percent }) => { cons().setLevel(percent); after(); });
     this.homey.flow.getActionCard('set_bag_price')
       .registerRunListener(async ({ price }) => { cons().setBagPrice(price); after(); });
     this.homey.flow.getActionCard('cleaning_done')

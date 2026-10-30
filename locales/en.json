@@ -194,7 +194,11 @@
     "reg_st_commands": "Commands to the stove",
     "reg_enabled": "enabled",
     "reg_disabled": "disabled (device settings)",
-    "reg_st_gain": "Learnt heating rate"
+    "reg_st_gain": "Learnt heating rate",
+    "co_remaining": "Level seen before refilling (%, optional)",
+    "co_unknown": "not recorded yet: use « Tank refilled »",
+    "co_refill_seen": "Refill",
+    "co_refill_est": "estimated"
   },
   "sensor_role": {
     "comfort": "Comfort sensor",

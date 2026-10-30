@@ -95,6 +95,7 @@
 
   <h2 data-i18n="settings.co_title"></h2>
   <table id="coTable"></table>
+  <div class="row"><label for="coRemaining" style="flex:1" data-i18n="settings.co_remaining"></label><input type="number" id="coRemaining" min="0" max="100" step="5"></div>
   <div class="row" style="gap:6px;flex-wrap:wrap">
     <button id="coRefill" class="secondary" style="flex:1" data-i18n="settings.co_refill"></button>
     <button id="coClean" class="secondary" style="flex:1" data-i18n="settings.co_clean"></button>
@@ -320,7 +321,11 @@
       var html = '';
       html += row(t('settings.co_left'), p.kgLeft + ' kg (' + p.percent + ' %)', p.kgLeft <= c.config.lowKg ? 'ko' : 'ok');
       html += row(t('settings.co_empty_at'), p.emptyAt ? dhm(p.emptyAt, tz) : '—');
-      html += row(t('settings.co_refilled_at'), dhm(p.refillAt, tz));
+      html += row(t('settings.co_refilled_at'), p.known ? dhm(p.refillAt, tz) : t('settings.co_unknown'), p.known ? '' : 'ko');
+      (p.refills || []).slice(0, 3).forEach(function (r) {
+        if (r.remainingPercent == null) return;
+        html += row(t('settings.co_refill_seen') + ' ' + dhm(r.at, tz), r.remainingPercent + ' % / ' + t('settings.co_refill_est') + ' ' + r.estimatedPercent + ' %' + (r.factor ? ' · ×' + r.factor : ''));
+      });
       html += row(t('settings.co_factor'), p.factor + ' (' + p.factorSamples + ')');
       html += row(t('settings.co_month'), mo.kg + ' kg · ' + mo.bags + ' ' + t('settings.co_bags') + ' · ' + mo.cost + ' €');
       if (mo.forecast) html += row(t('settings.co_forecast') + ' (' + mo.forecast.label + ')', mo.forecast.bags + ' ' + t('settings.co_bags') + ' · ' + mo.forecast.kg + ' kg · ' + mo.forecast.cost + ' €');
@@ -481,7 +486,11 @@
     el('regStop').addEventListener('click', function () { regAction({ action: 'stop' }); });
 
     el('svcNote').placeholder = t('settings.co_svc_note');
-    el('coRefill').addEventListener('click', function () { coAction({ action: 'refilled' }); });
+    el('coRefill').addEventListener('click', function () {
+      var r = el('coRemaining').value;
+      coAction({ action: 'refilled', remaining: r === '' ? null : Number(r) });
+      el('coRemaining').value = '';
+    });
     el('coClean').addEventListener('click', function () { coAction({ action: 'cleaned' }); });
     el('coService').addEventListener('click', function () {
       Homey.confirm(t('settings.co_service') + ' ?', 'info', function (e, ok) {

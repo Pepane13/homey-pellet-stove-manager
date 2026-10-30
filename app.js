@@ -299,7 +299,8 @@ class PelletStoveApp extends Homey.App {
 
   async consumablesAction(body) {
     const c = this.consumables;
-    if (body.action === 'refilled') c.refilled();
+    if (body.action === 'refilled') c.refilled({ remainingPercent: body.remaining ?? null });
+    else if (body.action === 'level') c.setLevel(body.percent);
     else if (body.action === 'cleaned') c.cleaned();
     else if (body.action === 'serviced') c.serviced({ date: body.date || null, note: body.note || '', cost: body.cost ?? null });
     else throw new Error('Unknown action');

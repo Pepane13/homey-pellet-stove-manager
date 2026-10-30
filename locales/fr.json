@@ -194,7 +194,11 @@
     "reg_st_commands": "Commandes vers le poêle",
     "reg_enabled": "activées",
     "reg_disabled": "désactivées (réglages de l'appareil)",
-    "reg_st_gain": "Vitesse de chauffe apprise"
+    "reg_st_gain": "Vitesse de chauffe apprise",
+    "co_remaining": "Niveau vu avant de recharger (%, facultatif)",
+    "co_unknown": "pas encore enregistrée : utilisez « Réservoir rechargé »",
+    "co_refill_seen": "Recharge",
+    "co_refill_est": "estimé"
   },
   "sensor_role": {
     "comfort": "Sonde de confort",
