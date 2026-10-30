@@ -122,3 +122,15 @@ test('emits a restoration event and stays quiet for unconfigured roles', async (
   await hub.refresh();
   assert.deepStrictEqual(events, [['down', 'comfort'], ['up', 'comfort']]);
 });
+
+test('a steady temperature is not stale while the device reports other values', async () => {
+  const devices = HOUSE();
+  devices.sejour.capabilitiesObj.measure_temperature = fresh(21.5, 200); // unchanged for 200 min
+  devices.sejour.capabilitiesObj.measure_co2 = fresh(650, 4);
+  devices.piscine.capabilitiesObj.measure_temperature = fresh(11.1, 200);
+  devices.piscine.capabilitiesObj.measure_humidity = fresh(88, 200); // whole module silent
+  const { hub } = setup(devices, CONFIG);
+  const s = await hub.refresh();
+  assert.strictEqual(s.roles.comfort, 'ok');
+  assert.strictEqual(s.roles.outdoor, 'stale');
+});

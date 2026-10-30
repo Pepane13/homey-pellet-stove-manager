@@ -46,5 +46,9 @@
   "0.7.0": {
     "en": "« Tank refilled » can record the level seen before refilling: the consumption estimate learns from it, without waiting for an empty tank. New action « The tank is at [x] % ». The level at installation is no longer used for learning.",
     "fr": "« Réservoir rechargé » peut indiquer le niveau vu avant de recharger : l'estimation de consommation en tient compte, sans attendre un réservoir vide. Nouvelle action « Le réservoir est à [x] % ». Le niveau supposé à l'installation n'est plus utilisé pour l'apprentissage."
+  },
+  "0.7.1": {
+    "en": "A sensor is reported as frozen only when its whole device stops reporting (humidity, CO2…), not when the temperature stays steady at night.",
+    "fr": "Une sonde n'est déclarée figée que si tout son appareil cesse de remonter des valeurs (humidité, CO2…), et non quand la température reste stable la nuit."
   }
 }
