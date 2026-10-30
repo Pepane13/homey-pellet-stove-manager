@@ -22,6 +22,15 @@
         "fr": "Afficher le réglage de la température cible"
       },
       "value": true
+    },
+    {
+      "id": "show_actions",
+      "type": "checkbox",
+      "title": {
+        "en": "Show the « Pellets refilled » and « Stove cleaned » buttons",
+        "fr": "Afficher les boutons « Pellets rechargés » et « Poêle nettoyé »"
+      },
+      "value": true
     }
   ],
   "api": {
@@ -40,6 +49,10 @@
     "program": {
       "method": "POST",
       "path": "/program"
+    },
+    "consumables": {
+      "method": "POST",
+      "path": "/consumables"
     }
   }
 }
