@@ -22,6 +22,15 @@
         "fr": "Afficher le réglage de la température cible"
       },
       "value": true
+    },
+    {
+      "id": "show_refill",
+      "type": "checkbox",
+      "title": {
+        "en": "Show the « Tank refilled » button",
+        "fr": "Afficher le bouton « Réservoir rechargé »"
+      },
+      "value": true
     }
   ],
   "api": {
@@ -40,6 +49,10 @@
     "program": {
       "method": "POST",
       "path": "/program"
+    },
+    "refill": {
+      "method": "POST",
+      "path": "/refill"
     }
   }
 }

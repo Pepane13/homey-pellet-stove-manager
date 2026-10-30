@@ -49,6 +49,10 @@
     .chips button { flex: 1 1 0; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid var(--homey-line-color, rgba(0,0,0,.1)); background: var(--homey-background-color, #fff); color: var(--homey-text-color, #222); border-radius: 16px; padding: 6px 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
     .chips button.on { background: var(--accent); border-color: var(--accent); color: #fff; }
     .chips button.busy { opacity: .6; }
+    .chips.sm { margin: 4px 0 2px; }
+    .chips.sm button { padding: 5px 4px; font-size: 11px; }
+    .refill { margin: 2px 0 4px; }
+    button.link { border: 0; background: none; padding: 2px 0; font-size: 12px; font-weight: 600; color: var(--accent); cursor: pointer; }
     .chips button.guess { background: transparent; color: var(--accent); border: 1.5px dashed var(--accent); }
     .ctl .btns svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
   </style>
@@ -59,10 +63,10 @@
     var T = {
       fr: { comfort: 'Séjour', thermostat: 'Thermostat', outdoor: 'Extérieur', power: 'Puissance', pellets: 'Granulés', empty: 'vide vers',
         month: 'Ce mois', forecast: 'prévu', bags: 'sacs', cleaning: 'Nettoyage', service: 'Entretien', hold: 'Maintien', unreachable: 'Poêle injoignable', none: 'Aucun poêle',
-        tgtThermostat: 'Consigne thermostat', tgtLiving: 'Consigne séjour', schedule: 'Programme', mSchedule: 'programme', mManual: 'manuel', mAway: 'absent', mHold: 'maintien', mFrost: 'hors-gel', sending: 'envoi…', away: 'Absent', atPower: 'à P{p} : {h} h' },
+        tgtThermostat: 'Consigne thermostat', tgtLiving: 'Consigne séjour', schedule: 'Programme', mSchedule: 'programme', mManual: 'manuel', mAway: 'absent', mHold: 'maintien', mFrost: 'hors-gel', sending: 'envoi…', away: 'Absent', refilled: 'Réservoir rechargé', levelBefore: 'Niveau avant recharge :', lvEmpty: 'Vide', lvUnknown: '?', cancel: 'Annuler', refillDone: 'recharge enregistrée', atPower: 'à P{p} : {h} h' },
       en: { comfort: 'Living room', thermostat: 'Thermostat', outdoor: 'Outdoor', power: 'Power', pellets: 'Pellets', empty: 'empty around',
         month: 'This month', forecast: 'forecast', bags: 'bags', cleaning: 'Cleaning', service: 'Service', hold: 'Holding', unreachable: 'Stove unreachable', none: 'No stove',
-        tgtThermostat: 'Thermostat setpoint', tgtLiving: 'Living room target', schedule: 'Schedule', mSchedule: 'schedule', mManual: 'manual', mAway: 'away', mHold: 'holding', mFrost: 'frost guard', sending: 'sending…', away: 'Away', atPower: 'at P{p}: {h} h' }
+        tgtThermostat: 'Thermostat setpoint', tgtLiving: 'Living room target', schedule: 'Schedule', mSchedule: 'schedule', mManual: 'manual', mAway: 'away', mHold: 'holding', mFrost: 'frost guard', sending: 'sending…', away: 'Away', refilled: 'Tank refilled', levelBefore: 'Level before refilling:', lvEmpty: 'Empty', lvUnknown: '?', cancel: 'Cancel', refillDone: 'refill recorded', atPower: 'at P{p}: {h} h' }
     };
     var FLAME = '<svg viewBox="0 0 24 24"><path d="M13.5 1.7s.7 2.6.7 4.7c0 2-1.3 3.6-3.3 3.6S7.6 8.4 7.6 6.4l.03-.36C5.6 8.5 4.4 11.6 4.4 15c0 4.4 3.6 8 8 8s8-3.6 8-8C20.4 9.6 17.8 4.8 13.5 1.7zM12.1 20c-1.8 0-3.2-1.4-3.2-3.1 0-1.6 1-2.8 2.8-3.1 1.8-.4 3.6-1.2 4.6-2.6.4 1.3.6 2.6.6 4 0 2.7-2.1 4.8-4.8 4.8z"/></svg>';
     function esc(v) { return String(v == null ? '' : v).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
@@ -98,6 +102,17 @@
       if (p.hoursAtCurrentPower != null) hints.push(t.atPower.replace('{p}', p.power).replace('{h}', p.hoursAtCurrentPower));
       if (p.emptyAt) hints.push(t.empty + ' ' + dhm(p.emptyAt));
       if (hints.length) html += '<div class="hint">' + esc(hints.join(' · ')) + '</div>';
+      if (!settings || settings.show_refill !== false) {
+        if (refillState.open) {
+          html += '<div class="refill"><div class="hint">' + esc(t.levelBefore) + '</div><div class="chips sm">' +
+            [[0, t.lvEmpty], [25, '25 %'], [50, '50 %'], [75, '75 %'], ['', t.lvUnknown]].map(function (c) {
+              return '<button data-refill="' + c[0] + '">' + esc(c[1]) + '</button>';
+            }).join('') + '</div><button class="link" data-refill-cancel="1">' + esc(t.cancel) + '</button></div>';
+        } else {
+          html += '<div class="refill"><button class="link" data-refill-open="1">＋ ' + esc(t.refilled) + '</button>' +
+            (refillState.msg ? ' <span class="hint">' + esc(refillState.msg) + '</span>' : '') + '</div>';
+        }
+      }
       if (!settings || settings.show_month !== false) {
         html += line(t.month, d.month.kg + ' kg · ' + d.month.cost + ' €' + (d.month.forecast != null ? ' · ' + t.forecast + ' ' + d.month.forecast + ' ' + t.bags : ''));
       }
@@ -107,6 +122,7 @@
       document.getElementById('w').innerHTML = html;
     }
     var ctlState = { pending: null, timer: null, data: null };
+    var refillState = { open: false, msg: '' };
     function modeText(t, d) {
       if (d.hold && d.regulationMode !== 'flows') return t.mHold + ' ' + d.hold.target + ' °C';
       var m = d.thermostat && d.thermostat.mode;
@@ -198,8 +214,24 @@
       var settings = Homey.getSettings ? Homey.getSettings() : {};
       var first = true;
       var lastHeight = 0;
+      document.getElementById('w').addEventListener('click', function (e) {
+        var b = e.target.closest('button');
+        if (!b) return;
+        var lang = (ctlState.data && T[ctlState.data.lang]) || T.fr;
+        if (b.hasAttribute('data-refill-open')) { refillState.open = true; refillState.msg = ''; load(); }
+        else if (b.hasAttribute('data-refill-cancel')) { refillState.open = false; load(); }
+        else if (b.hasAttribute('data-refill')) {
+          var v = b.getAttribute('data-refill');
+          b.classList.add('on', 'busy');
+          Homey.api('POST', '/refill', { remaining: v === '' ? null : Number(v) }).then(function () {
+            refillState.open = false; refillState.msg = lang.refillDone; load();
+            setTimeout(function () { refillState.msg = ''; }, 60000);
+          }).catch(function (err) { refillState.open = false; refillState.msg = (err && err.message) || String(err); load(); });
+        }
+      });
       function load() {
         Homey.api('GET', '/', {}).then(function (d) {
+          ctlState.data = d;
           render(d, settings);
           if (ctlState.pending == null) renderControls(d, settings, Homey, load);
           // the height follows the content (thermostat card, programs, pellets…) at every refresh

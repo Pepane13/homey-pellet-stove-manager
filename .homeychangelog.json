@@ -86,5 +86,9 @@
   "0.8.7": {
     "en": "Homey does not let apps run other apps' cards (« Missing Scopes »): when the thermostat cannot be switched directly, the app raises the new triggers « Thermostat program [Temp 21] requested » and « A thermostat setpoint is requested », and a Flow applies them with the thermostat's own cards.",
     "fr": "Homey ne permet pas aux apps d'exécuter les cartes d'autres apps (« Missing Scopes ») : quand le thermostat ne peut pas être commuté directement, l'app déclenche les nouvelles cartes « Programme du thermostat [Temp 21] demandé » et « Une consigne du thermostat est demandée », et un Flow les applique avec les cartes du thermostat."
+  },
+  "0.8.8": {
+    "en": "Widget: « Tank refilled » button with the level seen before refilling (empty, 25, 50, 75 % or unknown).",
+    "fr": "Widget : bouton « Réservoir rechargé » avec le niveau vu avant la recharge (vide, 25, 50, 75 % ou inconnu)."
   }
 }
